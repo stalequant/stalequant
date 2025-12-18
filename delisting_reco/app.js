@@ -131,7 +131,7 @@ fetchDelistingData()
                 <div class="container py-2 px-4">
                     <div class="row g-2 mb-2">
                         <div class="col-lg-12">
-                            <div class="card card-center"
+                            <div class="card card-content-centered"
                                 style="padding: var(--spacing-md); display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
                                 <h1 style="margin: 0; font-size: 1.5rem;">sq - Hyperliquid Delisting Recommendations</h1>
                                 <div class="links" style="margin: 0;">

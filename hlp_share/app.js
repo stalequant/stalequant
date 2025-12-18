@@ -2,10 +2,15 @@
    UI and initialization
 ========================= */
 let metrics = null;
+let currentCoin = 'TOTAL';
 
 function activate(coin) {
-  const select = $('coin-select');
-  if (select) select.value = coin;
+  currentCoin = coin;
+  const input = $('coinInput');
+  if (input) {
+    input.value = '';
+    input.placeholder = coin;
+  }
   document.querySelectorAll('.coin-btn').forEach(b => b.classList.toggle('active', b.dataset.coin === coin));
   location.hash = coin;
   if (metrics) plotCoin(metrics, coin);
@@ -40,17 +45,18 @@ async function init() {
     const coins = Object.keys(metrics).sort((a, b) => a === 'TOTAL' ? -1 : b === 'TOTAL' ? 1 : a.localeCompare(b));
     const quick = ['TOTAL', 'BTC', 'ETH', 'HYPE'];
 
-    const select = $('coin-select');
+    const input = $('coinInput');
+    const dropdown = $('coinDropdown');
     const btnBox = $('coin-buttons');
 
-    if (!select || !btnBox) return;
+    if (!input || !dropdown || !btnBox) return;
 
-    // build controls
-    coins.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = opt.textContent = c;
-      select.appendChild(opt);
-      if (quick.includes(c)) {
+    // Store coins globally for filtering
+    window.coins = coins;
+
+    // build quick buttons
+    quick.forEach(c => {
+      if (coins.includes(c)) {
         const btn = document.createElement('button');
         btn.textContent = c;
         btn.className = 'coin-btn';
@@ -59,10 +65,107 @@ async function init() {
       }
     });
 
-    btnBox.addEventListener('click', e => {
-      if (e.target.classList.contains('coin-btn')) activate(e.target.dataset.coin);
+    // Dropdown functions
+    function closeDropdown() {
+      dropdown.style.display = 'none';
+      dropdown.innerHTML = '';
+    }
+
+    function filterCoinSuggestions(query) {
+      if (!query) return [];
+      const q = query.toUpperCase().trim();
+      if (!q) return [];
+      return coins.filter(c => c.includes(q)).slice(0, 10);
+    }
+
+    function openDropdown(suggestions) {
+      dropdown.innerHTML = '';
+      if (suggestions.length === 0) {
+        closeDropdown();
+        return;
+      }
+
+      // Calculate position relative to viewport (using fixed positioning like stalegun)
+      const inputRect = input.getBoundingClientRect();
+      dropdown.style.position = 'fixed';
+      dropdown.style.left = inputRect.left + 'px';
+      dropdown.style.top = (inputRect.bottom + 6) + 'px';
+      dropdown.style.width = inputRect.width + 'px';
+      dropdown.style.zIndex = '9999';
+
+      suggestions.forEach(coin => {
+        const item = document.createElement('div');
+        item.className = 'comps-ddItem';
+        item.setAttribute('role', 'button');
+        item.setAttribute('tabindex', '0');
+        item.innerHTML = `<div class="sym">${coin}</div>`;
+        item.addEventListener('click', () => {
+          activate(coin);
+          closeDropdown();
+        });
+        item.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            item.click();
+          }
+        });
+        dropdown.appendChild(item);
+      });
+      dropdown.style.display = 'block';
+    }
+
+    // Handle input changes
+    input.addEventListener('input', () => {
+      const suggestions = filterCoinSuggestions(input.value);
+      openDropdown(suggestions);
     });
-    select.addEventListener('change', () => activate(select.value));
+
+    // Handle Enter key
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const value = input.value.toUpperCase().trim();
+        if (value && coins.includes(value)) {
+          activate(value);
+          closeDropdown();
+        } else if (value) {
+          alert(`Invalid coin: ${value}. Please select a valid coin from the list.`);
+          input.value = '';
+          input.placeholder = 'TOTAL';
+          closeDropdown();
+        }
+      } else if (e.key === 'Escape') {
+        closeDropdown();
+      }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target) && e.target !== input) {
+        closeDropdown();
+      }
+    });
+
+    // Handle blur - validate and update coin if valid
+    input.addEventListener('blur', () => {
+      const value = input.value.toUpperCase().trim();
+      if (value && coins.includes(value) && value !== currentCoin) {
+        activate(value);
+      } else if (value && !coins.includes(value)) {
+        input.value = '';
+        input.placeholder = currentCoin;
+      } else if (!value) {
+        input.placeholder = currentCoin;
+      }
+    });
+
+    // Handle button clicks
+    btnBox.addEventListener('click', e => {
+      if (e.target.classList.contains('coin-btn')) {
+        activate(e.target.dataset.coin);
+        closeDropdown();
+      }
+    });
 
     const initial = (location.hash.replace('#', '') || 'TOTAL').toUpperCase();
     activate(coins.includes(initial) ? initial : 'TOTAL');

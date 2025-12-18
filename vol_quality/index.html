@@ -4,94 +4,115 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>sq - DEX volume quality</title>
+  <title>stalequant.com - DEX volume quality</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="icon" href="../favicon.ico">
   <link rel="stylesheet" href="../styles.css" />
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+
+  <style>
+    .tape {
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+    }
+
+    .tape .chart-header {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .tape .box,
+    .tape-box {
+      height: 260px;
+      overflow: auto;
+      line-height: 1.25;
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .tape .rowline,
+    .tape-box .rowline {
+      margin: 0 0 6px 0;
+    }
+
+    .tape .muted {
+      opacity: 0.75;
+    }
+
+    .tape .hl,
+    .tape-box .hl {
+      color: #35d07f;
+    }
+
+    .tape .ex,
+    .tape-box .ex {
+      color: #ff6b6b;
+    }
+
+    .tape .li,
+    .tape-box .li {
+      color: #4aa3ff;
+    }
+  </style>
 </head>
 
 <body>
-  <div class="container py-2 px-4">
-    <!-- Header -->
-    <div class="row g-2 mb-2">
-      <div class="col-lg-12">
-        <div class="card card-center"
-          style="padding: var(--spacing-md); display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
-          <h1 style="margin: 0; font-size: 1.5rem;">sq - DEX volume quality</h1>
-          <div class="links" style="margin: 0;">
+
+  <!-- Main container -->
+  <div class="container py-4 px-4">
+    <div class="row g-4">
+
+      <!-- Header -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>stalequant.com - DEX volume quality</span>
             <a href="../index.html">← Home</a>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Charts -->
-    <div class="row g-4 mb-4">
-      <div class="col-lg-6 col-md-12">
-        <div class="rates-card">
-          <div class="hd">
-            <h2>Volume vs Net Position Changes</h2>
+      <!-- LEFT CHART -->
+      <div class="col-lg-6 col-12">
+        <div class="card">
+          <div class="card-title">
+            Volume vs Net Position Changes
           </div>
-          <div class="bd">
+          <div class="card-body">
             <div id="chartLeft"></div>
           </div>
         </div>
       </div>
 
-      <div class="col-lg-6 col-md-12">
-        <div class="rates-card">
-          <div class="hd">
-            <h2>% Volume That Was Net Position Change</h2>
+      <!-- RIGHT CHART -->
+      <div class="col-lg-6 col-12">
+        <div class="card">
+          <div class="card-title">
+            % Volume That Was Net Position Change
           </div>
-          <div class="bd">
+          <div class="card-body">
             <div id="chartRight"></div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Controls -->
-    <div class="row g-4 mb-4">
+      <!-- BOTTOM BOX -->
       <div class="col-12">
-        <div class="rates-card">
-          <div class="ctrlbar">
-            <div class="left">
-              <div>
-                <div
-                  style="font-size:12px; color:var(--text-secondary); display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;">
-                  <span style="font-weight:800; color:var(--text-primary);">Status</span>
-                  <span class="status-pill" id="statusHL">HL: <span class="status-warn">connecting</span></span>
-                  <span class="status-pill" id="statusEX">EdgeX: <span class="status-warn">connecting</span></span>
-                  <span class="status-pill" id="statusLI">Lighter: <span class="status-warn">connecting</span></span>
-                  <span class="status-pill">Last tick: <span id="lastTick" class="status-warn">--</span></span>
-                </div>
-              </div>
-            </div>
+        <div class="card">
+          <div class="card-title">
+            Status
           </div>
-        </div>
-      </div>
-    </div>
+          <div class="card-body">
+            <span class="status-pill" id="statusHL">HL: <span class="status-warn">connecting</span></span>
+            <span class="status-pill" id="statusEX">EdgeX: <span class="status-warn">connecting</span></span>
+            <span class="status-pill" id="statusLI">Lighter: <span class="status-warn">connecting</span></span>
+            <span class="status-pill">Last tick: <span id="lastTick" class="status-warn">--</span></span>
 
-    <!-- Trade tape -->
-    <div class="row g-4">
-      <div class="col-12">
-        <div class="rates-card">
-          <div class="hd">
-            <h2>Trade tape</h2>
-          </div>
-          <div class="ctrlbar">
-            <div class="left">
-              <div>
-                <div style="font-weight:800; font-size:13px; color:var(--text-primary);">Info</div>
-                <div style="font-size:12px; color:var(--text-secondary);">
-                  showing <span id="tapeCount">0</span> trades (newest at bottom)
-                  <span style="opacity: 0.7;">-- auto-scrolls unless you scroll up</span>
-                </div>
-              </div>
+            <div class="py-3">Trade tape:
+              <span id="tapeCount">0</span> trades (newest at bottom)
             </div>
-          </div>
-          <div class="bd">
             <div id="tapeBox" class="tape-box"></div>
           </div>
         </div>

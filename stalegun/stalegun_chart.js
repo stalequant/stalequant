@@ -2,9 +2,9 @@ var firstPoint = Date.now()+120;
         
 const startTime = Date.now();
 
-var hiddenLines = ['binance futures',  '$5k spread']; 
+var hiddenLines = ['$5k spread']; 
 
-const exchanges = ['hyperliquid', 'binance futures', 'stalegun'];
+const exchanges = ['hyperliquid', 'binance futures', 'binance spot', 'stalegun'];
 
 const datasetTypes = ['trades', 'bid-ask', '$5k spread'];
 
@@ -18,12 +18,13 @@ const stepSizeMs = 10000; // 5 second
 // Get the coin from URL parameters
 const urlParams = new URLSearchParams(window.location.search);
 
-const coinParam = urlParams.get('coin') || 'BTC'; 
-const coins = ['AAVE', 'ACE', 'ADA', 'AI', 'ALT', 'APE', 'APT', 'AR', 'ARB', 'ARK', 'ATOM', 'AVAX', 'BADGER', 'BANANA', 'BCH', 'BIGTIME', 'BLUR', 'BLZ', 'BNB', 'BNT', 'BOME', 'BRETT', 'BSV', 'BTC', 'CAKE', 'CFX', 'COMP', 'CRV', 'CYBER', 'DOGE', 'DOT', 'DYDX', 'DYM', 'ENA', 'ENS', 'ETC', 'ETH', 'ETHFI', 'FET', 'FIL', 'FTM', 'FTT', 'FXS', 'GALA', 'GAS', 'GMT', 'GMX', 'HBAR', 'ILV', 'IMX', 'INJ', 'IO', 'JTO', 'JUP', 'KAS', 'LDO', 'LINK', 'LISTA', 'LOOM', 'LTC', 'MANTA', 'MATIC', 'MAV', 'MAVIA', 'MEME', 'MEW', 'MINA', 'MKR', 'MYRO', 'NEAR', 'NEO', 'NOT', 'NTRN', 'OGN', 'OMNI', 'ONDO', 'OP', 'ORBS', 'ORDI', 'PENDLE', 'PEOPLE', 'PIXEL', 'POLYX', 'POPCAT', 'PYTH', 'RDNT', 'RENDER', 'REZ', 'RSR', 'RUNE', 'SAGA', 'SEI', 'SNX', 'SOL', 'STG', 'STRAX', 'STRK', 'STX', 'SUI', 'SUPER', 'SUSHI', 'TAO', 'TIA', 'TNSR', 'TON', 'TRB', 'TRX', 'TURBO', 'UMA', 'UNI', 'USTC', 'W', 'WIF', 'WLD', 'XAI', 'XRP', 'YGG', 'ZEN', 'ZETA', 'ZK', 'ZRO'];
+var coinParam = urlParams.get('coin') || 'BTC'; 
+const coins = ['AAVE', 'ACE', 'ADA', 'AI', 'ALT', 'APE', 'APT', 'AR', 'ARB', 'ARK', 'ATOM', 'AVAX', 'BADGER', 'BANANA', 'BCH', 'BIGTIME', 'BLUR', 'BLZ', 'BNB', 'BNT', 'BOME', 'BRETT', 'BSV', 'BTC', 'CAKE', 'CFX', 'COMP', 'CRV', 'CYBER', 'DOGE', 'DOT', 'DYDX', 'DYM', 'ENA', 'ENS', 'ETC', 'ETH', 'ETHFI', 'FET', 'FIL', 'FTM', 'FTT', 'FXS', 'GALA', 'GAS', 'GMT', 'GMX', 'HBAR', 'HYPE', 'ILV', 'IMX', 'INJ', 'IO', 'JTO', 'JUP', 'KAS', 'LDO', 'LINK', 'LISTA', 'LOOM', 'LTC', 'MANTA', 'MATIC', 'MAV', 'MAVIA', 'MEME', 'MEW', 'MINA', 'MKR', 'MYRO', 'NEAR', 'NEO', 'NOT', 'NTRN', 'OGN', 'OMNI', 'ONDO', 'OP', 'ORBS', 'ORDI', 'PENDLE', 'PEOPLE', 'PIXEL', 'POLYX', 'POPCAT', 'PYTH', 'RDNT', 'RENDER', 'REZ', 'RSR', 'RUNE', 'SAGA', 'SEI', 'SNX', 'SOL', 'STG', 'STRAX', 'STRK', 'STX', 'SUI', 'SUPER', 'SUSHI', 'TAO', 'TIA', 'TNSR', 'TON', 'TRB', 'TRX', 'TURBO', 'UMA', 'UNI', 'USTC', 'W', 'WIF', 'WLD', 'XAI', 'XRP', 'YGG', 'ZEN', 'ZETA', 'ZK', 'ZRO'];
 
 
-const colorHL = '#44BEA4';
-const colorBN = '#FF8424';
+const colorHL = '#35d07f';
+const colorBN = '#ff6b6b';
+const colorBNSpot = '#ffd37a';
 const colorStalegun = '#A444BE';
 const colorDark = '#FFFFFF11';
 
@@ -35,12 +36,22 @@ const locToStr = ( venue, dtype, side) =>{
 	return venue + 'x' +dtype+ 'x' + (side? 'b':'s');
 }
 
-const addData = (venue, dtype, side, time, value)  => {
+const addData = (venue, dtype, side, time, value, quantity)  => {
      	   firstPoint = Math.min(firstPoint, time)
-		venueDtypeMapping[locToStr(venue, dtype, side)].data.push({x: time, y: value});
+	const key = locToStr(venue, dtype, side);
+	const dataset = venueDtypeMapping[key];
+	if (!dataset || !dataset.data) {
+		console.warn(`Dataset not found for ${key}, skipping data`);
+		return;
+	}
+	dataset.data.push({x: time, y: value});
 	if ((venue==='binance futures') || (venue==='hyperliquid') ){ 
 		addStalegunData()
-}
+	}
+	// Add to trade tape if it's a trade (but not stalegun/inferred hl price)
+	if (dtype === 'trades' && venue !== 'stalegun' && typeof appendTradeToTape === 'function') {
+		appendTradeToTape(venue, time, value, side, quantity);
+	}
 }
 
 const createUnifiedDataset = (venue, dtype, buy) => {
@@ -51,6 +62,9 @@ const createUnifiedDataset = (venue, dtype, buy) => {
       break;
     case 'binance futures':
       color = colorBN;
+      break;
+    case 'binance spot':
+      color = colorBNSpot;
       break;
     case 'stalegun':
       color = colorStalegun;
@@ -121,10 +135,23 @@ function customTickGenerator(min, max, stepSize) {
     return ticks;
 }
 
+// Map legend text to venue names
+const legendToVenueMap = {
+    'hyperliquid': 'hyperliquid',
+    'binance futures': 'binance futures',
+    'binance spot': 'binance spot',
+    'inferred hl price': 'stalegun'
+};
+
 function updateChartData(chart) {
         for (let i = 0; i < chart.data.datasets.length; i++) {
         	const meta = chart.getDatasetMeta(i);
-	        meta.hidden = hiddenLines.includes(meta._dataset.venue) || hiddenLines.includes(meta._dataset.dtype);
+	        const venue = meta._dataset.venue;
+	        const dtype = meta._dataset.dtype;
+	        // Check if venue is hidden (either by venue name or legend text)
+	        const isVenueHidden = hiddenLines.includes(venue) || 
+	                             hiddenLines.some(hidden => legendToVenueMap[hidden] === venue);
+	        meta.hidden = isVenueHidden || hiddenLines.includes(dtype);
         }        
 	chart.update();
 }
@@ -182,7 +209,8 @@ const coinChart = new Chart(ctx, {
 const legendItems = [
     { text: 'hyperliquid', color: colorHL, style: 'square'},
     { text: 'binance futures', color: colorBN, style: 'square'},
-    { text: 'stalegun', color: colorStalegun, style: 'square'},
+    { text: 'binance spot', color: colorBNSpot, style: 'square'},
+    { text: 'inferred hl price', color: colorStalegun, style: 'square'},
     { text: 'trades', color: 'white', style: 'circle' },
     { text: '$5k spread', color: 'rgba(255,255,255,0.3)', style: 'square' },
     { text: 'bid-ask', color: 'rgba(255,255,255,0.3)', style: 'square'}

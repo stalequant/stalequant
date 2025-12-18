@@ -1,7 +1,3 @@
-body {
-    margin: 20px;
-}
-
 #chart-container {
     width: 100%;
     height: 400px;
@@ -117,14 +113,106 @@ th, td {
     margin: 0;
 }
 
-.ui-autocomplete {
-    border: 1px solid #555;
-    max-height: 200px;
-    overflow-y: auto;
+
+.comps-picker {
+    position: relative;
 }
 
-#coinInput {
-    width: 120px;
-    border: 1px solid #555;
-    padding: 5px;
+.comps-picker input {
+    width: 80%;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    outline: none;
+    font-size: 13px;
+}
+
+.comps-picker input::placeholder {
+    color: var(--text-secondary);
+}
+
+.comps-dropdown {
+    position: fixed;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: rgba(0, 0, 0, 0.95);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    z-index: 9999;
+    display: none;
+    max-height: 320px;
+    overflow-y: auto;
+    min-width: 200px;
+}
+
+.comps-ddItem {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.comps-ddItem:first-child {
+    border-top: none;
+}
+
+.comps-ddItem:hover,
+.comps-ddItem.selected {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+
+.coin-btn {
+    margin-right: 10px;
+    padding: 5px 12px;
+    border: 1px solid var(--border-subtle);
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-primary);
+    border-radius: var(--radius-lg);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background var(--transition-base), border-color var(--transition-base);
+}
+
+.coin-btn:hover {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.coin-btn.active {
+    background: rgba(80, 210, 193, 0.2);
+    border-color: rgba(80, 210, 193, 0.4);
+}
+
+.tape-box {
+    height: 260px;
+    overflow: auto;
+    line-height: 1.25;
+    font-size: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.tape-box .rowline {
+    margin: 0 0 6px 0;
+}
+
+.tape-box .hyperliquid {
+    color: #35d07f;
+}
+
+.tape-box .binancefutures {
+    color: #ff6b6b;
+}
+
+.tape-box .binancespot {
+    color: #ffd37a;
+}
+
+.tape-box .stalegun {
+    color: #A444BE;
 }
