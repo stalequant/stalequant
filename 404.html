@@ -1,0 +1,38 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Redirecting…</title>
+
+<script>
+    const redirects = {
+        "/bot_view.html": "/exch_rankings/index.html",
+
+        "/zero_fee_is_hard.html": "/essays.html#no-rh",
+
+        "/exch_rankings/bot_view.html": "/exch_rankings/index.html",
+
+
+        "/delisting_reco_v1_1.html": "/delisting_reco/index.html",
+        "/delisting_reco/delisting_reco_v1_1.html": "/delisting_reco/index.html",
+        "/delisting_reco/outdated_hyperliquid_recos.html": "/delisting_reco/index.html",
+        "/delisting_reco_v1_2.html": "/delisting_reco/index.html",
+        "/delisting_reco.html": "/delisting_reco/index.html",
+        "/delisting_reco/delisting_reco_v1_2.html": "/delisting_reco/index.html",
+        "/hyperliquid_recos.html": "/delisting_reco/index.html",
+
+
+        "/hl_points/hlprices.html": "/hl_points/index.html",
+        "/hlprices.html": "/hl_points/index.html",
+        "/hl_points.html": "/hl_points/index.html",
+
+        "/hlp_share.html": "/hlp_share/index.html",
+        "/hlp_share/hlp_share.html": "/hlp_share/index.html",
+
+        "/stalegun/stalegun.html": "/stalegun/index.html",
+        "/stalegun.html": "/stalegun/index.html",
+    };
+
+    const path = location.pathname.replace(/\/$/, "");
+    if (redirects[path]) {
+        location.replace(redirects[path]);
+    }
+</script>

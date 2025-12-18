@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>stalequant.com - rates dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Main container -->
+  <div class="container py-4 px-4">
+    <div class="row g-4">
+
+      <!-- Header -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>stalequant.com - rates dashboard</span>
+            <a href="../index.html">← Home</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Time series card -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span id="tsTitle">Time Series</span>
+          </div>
+          <div class="card-body">
+            <div id="tsChart"></div>
+            <div class="field">
+              <label>View</label>
+              <div class="tabs">
+                <div class="tabbtn" id="tabRaw">Raw</div>
+                <div class="tabbtn active" id="tabSmooth">Smoothed</div>
+              </div>
+            </div>
+          </div>
+          <div class="ctrlbar" id="tsCtrlBar" title="Click to expand/collapse">
+            <div class="left">
+              <div class="chev" id="tsChev">&#8250;</div>
+              <div>
+                <div style="font-weight:800; font-size:13px; color:var(--text-primary);">Advanced...</div>
+                <div style="font-size:12px; color:var(--text-secondary);" id="tsCtrlSummary">
+                </div>
+              </div>
+            </div>
+            <span class="badge" id="tsUpdatedBadge">Not updated</span>
+            <span class="badge" id="tsPointsBadge">0 pts</span>
+          </div>
+          <div class="ctrlpanel" id="tsCtrlPanel">
+            <div style="height:12px"></div>
+
+            <div class="field">
+              <label>Time series toggles</label>
+              <div class="toggles" id="toggleListTS"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Curve card -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>Risk Free Curve</span>
+          </div>
+          <div class="card-body">
+            <div id="curveChart"></div>
+          </div>
+
+          <div class="ctrlbar" id="curveCtrlBar" title="Click to expand/collapse">
+            <div class="left">
+              <div class="chev" id="curveChev">&#8250;</div>
+              <div>
+                <div style="font-weight:800; font-size:13px; color:var(--text-primary);">Advanced...</div>
+                <div style="font-size:12px; color:var(--text-secondary);" id="curveCtrlSummary">
+                </div>
+              </div>
+            </div>
+            <span class="badge" id="curveUpdatedBadge">Not updated</span>
+            <span class="badge" id="curvePointsBadge">0 pts</span>
+          </div>
+          <div class="ctrlpanel" id="curveCtrlPanel">
+            <div style="height:12px"></div>
+
+            <div class="grid2">
+              <div class="field">
+                <label for="minDays">Min maturity (days)</label>
+                <input type="number" id="minDays" value="7" min="0" step="1" />
+              </div>
+              <div class="field">
+                <label for="maxDays">Max maturity (days)</label>
+                <input type="number" id="maxDays" value="400" min="1" step="1" />
+              </div>
+              <div class="field">
+                <label for="minRatePct">Min rate (%)</label>
+                <input type="number" id="minRatePct" value="-40" step="1" />
+              </div>
+              <div class="field">
+                <label for="maxRatePct">Max rate (%)</label>
+                <input type="number" id="maxRatePct" value="1000" step="10" />
+              </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="field">
+              <label>Curve toggles</label>
+              <div class="toggles" id="toggleListCurve"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pendle PT token card -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>Selected Pendle PT Markets</span>
+          </div>
+          <div class="card-body">
+            <div id="pendleChart"></div>
+          </div>
+
+          <div class="ctrlbar" id="pendleCtrlBar" title="Click to expand/collapse">
+            <div class="left">
+              <div class="chev" id="pendleChev">&#8250;</div>
+              <div>
+                <div style="font-weight:800; font-size:13px; color:var(--text-primary);">Advanced...</div>
+                <div style="font-size:12px; color:var(--text-secondary);" id="pendleCtrlSummary">
+                </div>
+              </div>
+            </div>
+            <span class="badge" id="pendleUpdatedBadge">Not updated</span>
+            <span class="badge" id="pendlePointsBadge">0 markets</span>
+          </div>
+          <div class="ctrlpanel" id="pendleCtrlPanel">
+            <div style="height:12px"></div>
+            <!-- Future controls can go here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="timeseries.js"></script>
+  <script src="curve.js"></script>
+  <script src="pendle.js"></script>
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

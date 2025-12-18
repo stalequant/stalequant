@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>stalequant.com - Hyperliquid HLP shares</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../styles.css" />
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+    <style>
+        .coin-btn {
+            margin-right: 10px;
+            padding: 5px 12px;
+            border: 1px solid var(--border-subtle);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-primary);
+            border-radius: var(--radius-lg);
+            font-size: 12px;
+            cursor: pointer;
+            transition: background var(--transition-base), border-color var(--transition-base);
+        }
+
+        .coin-btn:hover {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .coin-btn.active {
+            background: rgba(80, 210, 193, 0.2);
+            border-color: rgba(80, 210, 193, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Main container -->
+    <div class="container py-4 px-4">
+        <div class="row g-4">
+
+            <!-- Header -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-title">
+                        <span>stalequant.com - Hyperliquid HLP shares</span>
+                        <a href="../index.html">← Home</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="plot"></div>
+                        <div style="display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap;">
+                            <span class="comps-optLabel" style="margin: 0;">Ticker:</span>
+                            <div class="comps-picker" style="display: inline-block;">
+                                <input id="coinInput" type="text" placeholder="TOTAL" autocomplete="off"
+                                    style="width: 200px;" />
+                                <div class="comps-dropdown" id="coinDropdown"></div>
+                            </div>
+                            <div id="coin-buttons"></div>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-secondary);">
+                            7‑day moving averages • Data via <a
+                                href="https://github.com/thunderhead-labs/hyperliquid-stats" target="_blank"
+                                style="color: var(--text-secondary);">Thunderhead‑labs</a>
+                        </div>
+                        <span class="badge" id="hlpUpdatedBadge">Not updated</span>
+                        <span class="badge" id="hlpStatusBadge">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script src="data.js"></script>
+    <script src="chart.js"></script>
+    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

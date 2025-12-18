@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>stalequant.com - Hyperliquid Delisting Recommendations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../styles.css">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <div class="container py-2 px-4">
+            <!-- Header -->
+            <div class="row g-2 mb-2">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-title">
+                            <span>stalequant.com - Hyperliquid Delisting Recommendations</span>
+                            <a href="../index.html">← Home</a>
+                            <span v-if="meta" class="version-badge" style="margin-left: 8px;">
+                                v{{ meta.version }} — {{ meta.time }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Chart -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Visualization of Recommendations</span>
+                        </div>
+                        <div class="card-body">
+                            <div id="plotDiv"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Data</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="filter-buttons">
+                                <button v-for="option in filterOptions" :key="option.value"
+                                    :class="['filter-btn', { active: selectedFilter === option.value }]"
+                                    @click="selectedFilter = option.value">
+                                    {{ option.label }}
+                                </button>
+                            </div>
+
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th v-for="col in visibleColumns" :key="col.name">
+                                                <template
+                                                    v-if="col.name !== 'Symbol' && col.name !== 'Recommendation' && col.name !== 'Max Lev. on HL'">
+                                                    <input type="checkbox" class="column-checkbox"
+                                                        :checked="selectedColumns.includes(col.name)" @click.stop
+                                                        @change="toggleColumn(col.name)">
+                                                </template>
+                                                {{ col.label }}
+                                            </th>
+                                            <th class="more-btn">
+                                                <button class="filter-btn" @click="toggleMoreMenu"
+                                                    style="padding: 4px 8px; font-size: 11px;">
+                                                    ⋮
+                                                </button>
+                                                <div class="more-columns-menu" :class="{ show: showMoreMenu }">
+                                                    <div class="more-columns-menu-header">Extra Columns</div>
+                                                    <div v-for="col in hiddenColumns" :key="col.name"
+                                                        class="more-columns-item" @click.stop>
+                                                        <input type="checkbox"
+                                                            :checked="selectedColumns.includes(col.name)"
+                                                            @change="toggleColumn(col.name)">
+                                                        <span>{{ col.label }}</span>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(row, idx) in paginatedRows" :key="idx">
+                                            <td v-for="col in visibleColumns" :key="col.name"
+                                                :style="getCellStyle({ col, value: row[col.field] })">
+                                                {{ row[col.field] }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2 mt-3 align-items-center">
+                                <div class="me-auto">
+                                    <small class="text-muted">
+                                        Showing {{ (currentPage - 1) * rowsPerPage + 1 }}-{{ Math.min(currentPage *
+                                        rowsPerPage, filteredRows.length) }} of {{ filteredRows.length }} rows
+                                    </small>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn"
+                                        style="background: var(--bg-card-passive); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 7px 14px; font-size: 13px; cursor: pointer;"
+                                        @click="currentPage = Math.max(1, currentPage - 1)"
+                                        :disabled="currentPage === 1">
+                                        Previous
+                                    </button>
+                                    <button class="btn"
+                                        style="background: var(--bg-card-passive); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 7px 14px; font-size: 13px; cursor: pointer;"
+                                        @click="currentPage = Math.min(Math.ceil(filteredRows.length / rowsPerPage), currentPage + 1)"
+                                        :disabled="currentPage >= Math.ceil(filteredRows.length / rowsPerPage)">
+                                        Next
+                                    </button>
+                                </div>
+                                <button class="btn"
+                                    style="background: var(--bg-card-passive); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 7px 14px; font-size: 13px; cursor: pointer;"
+                                    @click="downloadCSV">
+                                    Download CSV
+                                </button>
+                                <a href="https://github.com/stalequant/stalequant.github.io/blob/main/delisting_reco/build_delisting_recos.py"
+                                    target="_blank" class="btn"
+                                    style="background: var(--bg-card-passive); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 7px 14px; font-size: 13px; cursor: pointer; text-decoration: none;">
+                                    Code
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Methodology -->
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Methodology</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="methodology-section">
+                                <p>
+                                    Scoring is based on a total of 100 points, equally divided across five measures,
+                                    plus 5 bonus points for HL spot tokens.
+                                </p>
+
+                                <strong>Market Cap (15 points)</strong>
+                                <p>
+                                    Low market cap coins are typically less significant, less profitable, and more
+                                    susceptible to manipulation. We use CoinMarketCap-reported market caps, assigning 0
+                                    points for caps below $1M and 15 points for caps above $5B.
+                                </p>
+
+                                <strong>Spot Volumes (20 points)</strong>
+                                <p>
+                                    Illiquid spot markets suggest less important, less profitable, and more easily
+                                    manipulated coins. They also impact oracle stability. We use two metrics: average
+                                    daily volume across exchanges and a geometric mean of the per-venue volume designed
+                                    to favors coins with liquidity on multiple venues. Specifically, the geometric mean
+                                    is of the average daily volume of the three most liquid exchanges for each coin,
+                                    with $1m added prior to the geomean and subtracted after the geomean for
+                                    regularization. To penalize coins with large price drops, daily volume is dollarized
+                                    using the lower of that day's low and the current price. We consider USD and
+                                    USD-stablecoin pairs on Binance, Bybit, Coinbase, Crypto.com, Gate, Hyperliquid,
+                                    Kraken, Kucoin, MEXC, and OKX. Each measure is scored from 0 (below $10K/day) to 10
+                                    points (above $1B/day).
+                                </p>
+
+                                <strong>Futures Volumes (20 points)</strong>
+                                <p>
+                                    Illiquid futures markets are undesirable for similar reasons as illiquid spot
+                                    markets. We apply a similar methodology, focusing only on USD and
+                                    USD-stablecoin-denominated linear futures. Exchanges considered include Binance,
+                                    BitMEX, Bybit, Crypto.com, Gate, HTX, Hyperliquid, Kraken Futures, MEXC, and OKX.
+                                </p>
+
+                                <strong>Spot Price Behavior (10 points)</strong>
+                                <p>
+                                    Dramatic spot price fluctuations create risk for the platform and hint at
+                                    illiquidity. We consider the volatility and intraday range of daily spot returns for
+                                    the most liquid pairs in the spot venues considered above.
+                                </p>
+
+                                <strong>Hyperliquid Activity (15 points)</strong>
+                                <p>
+                                    Coins with low trading activity on Hyperliquid are less relevant and less desirable.
+                                    We use 30-day averages for both daily volume and daily open interest, assigning 0
+                                    points for values under $1K and 10 points for values above $100M (per metric).
+                                </p>
+
+                                <strong>Hyperliquid Liquidity (20 points)</strong>
+                                <p>
+                                    Poor market maker support on Hyperliquid increases susceptibility to manipulation.
+                                    We score four metrics (5 points each):
+                                </p>
+                                <ul>
+                                    <li>HLP share of volume (30-day average): 0 points if &gt; 50%, 5 points if 0%.</li>
+                                    <li>HLP share of open interest: 0 points if &gt; 10%, 5 points if 0%.</li>
+                                    <li>Average slippage on $3K orders: 0 points if &gt; 5bps, 5 points if 0bps.</li>
+                                    <li>Slippage on $30K orders: 0 points if &gt; 50bps, 5 points if 0bps.</li>
+                                </ul>
+
+                                <strong>Hyperliquid Spot Listings (5 points)</strong>
+                                <p>
+                                    Coins with a primary listing on Hyperliquid's "Strict" spot list benefit from the
+                                    platform's liquidity and are awarded an extra 5 points.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
+    <script src="shared.js"></script>
+    <script src="data.js"></script>
+    <script src="chart.js"></script>
+    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>stalequant.com - essays</title>
+  <link rel="icon" href="../favicon.ico">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+
+<body>
+  <!-- Corner cat -->
+  <img src="../img/nft.png" alt="physics purr" class="corner-decoration">
+
+  <!-- Main container -->
+  <div class="container width-limited-800 py-4 px-4">
+    <div class="row g-4">
+
+      <!-- Header -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>stalequant.com - essays</span>
+            <a href="../index.html">← Home</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Make Money -->
+      <div class="col-12  ">
+        <div class="card ">
+          <div class="card-title" id="make-money">
+            Make money:
+            <span id="bots">Writing bots
+            </span>
+          </div>
+          <div class="card-body">
+
+            <p>There
+              are plenty of guides on building crypto trading strategies. Many are decent,
+              none resonated with me. Here's my take. Five easy steps.</p>
+
+            <p>0. Get your expectations in check</p>
+
+            <p>1. Code a low-quality execution bot</p>
+
+            <p>2. Build an orchestration system around that execution</p>
+
+            <p>3. Add performance measurement system</p>
+
+            <p>4. Use performance data to improve steps 1 to 3 until you're not terrible</p>
+
+            <p>5. Start trying to actually make money</p>
+
+            <p>Let's walk through these.</p>
+
+            <p><strong id="expectations">0. Get your expectations in check</strong></p>
+            <p>To start with, I don't think automated crypto trading is a path to riches. I'm not even sure it's a
+              particularly good path. I have
+              done very well. With that said, </p>
+
+            <ul>
+              <li> A lot of my money came from the generosity of our lord and savior who gifted his
+                humble servant five lakh HYPE; and
+              <li>
+                I was at a top STEM PhD before burning/selling out and going to tradfi, before burning
+                out and doing crypto, which puts me in a better position to make money than most
+                people (god went with a glass cannon build; I'm
+                also obese and diagnosed autistic);
+            </ul>
+
+            <p>If
+              you exclude the HL airdrop, I've made about as much as I would
+              if I money kept on my previous path. I do get a lot of flexibility and I got some
+              lottery tickets one of which happened to be a winner; but I also put my own money
+              on the line and got more risk / stress / loneliness.</p>
+
+            <p>More
+              generally, I don't think the crypto trading cottage
+              industry has much of a future.
+            <ul>
+              <li>If crypto takes off, the markets will get efficient and you will be driven out by
+                tradfi players who are better run, have cheaper capital, etc. They won't even want to hire you because
+                the
+                skills needed to
+                run a trading system solo don't have a ton of crossover with the
+                skills needed to work as part of a tradfi firm.
+              <li>If crypto doesn't take off, it will die. You will
+                need to find work at tradfi firm and they won't
+                even be that interested in hiring you, not only because of the factors above but
+                also because you were in a failed industry.
+            </ul>
+            </p>
+
+            <p>Given
+              that, lets get going with the good stuff. Quoting a movie as I tend to, “If he [my son] really wants a
+              cigarette. I'll buy him
+              his first pack.”</p>
+
+            <p><strong id="execution-engine">1. Low Quality Execution Engine</strong></p>
+
+            <p>Brilliant
+              people have spent decades optimizing trade execution. Luckily, they haven't spent
+              decades on crypto execution because crypto is so new. </p>
+
+            <p>Your
+              first step on the path I have set is to build a basic execution engine. This is
+              not a trading strategy. This is not going to make money. This is a placeholder you
+              will use to build out measuring and monitoring capabilities. Once you have those
+              in place, you will improve this into something passable, which you will then use
+              one things that actually CAN make money.</p>
+
+            <p>I'd
+              suggest you start with Hyperliquid. Why? </p>
+
+            <ul>
+              <li>
+                The large taker speedbump makes life much easier for noobs.
+              <li>
+                There is still lots of retail flow, and less serious MM competition than most
+                CEXs.
+              <li>
+                Other DEXes are too small for our purposes, other CEXs aren't really suitable. Fees kill you on
+                registered
+                venues,
+                latency kills you as a shrimp non-Tokyo venues (OKX, Bybit), Binance is hyper-competitive,
+                Bitget is a bucket shop. Many of the fun new entrants have hard to manage
+                quirks. HL is the only venue with decent depth.
+            </ul>
+
+            Practical
+            steps:
+            <ul>
+              <li>
+                Put $500 into a trading account on Hyperliquid.
+              </li>
+              <li>
+                Get the Hyperliquid Rust SDK running on your own computer (Python works too, again,
+                the goal here is mostly to get something we can build our measurements around).
+              </li>
+              <li>
+                Check my stalegun demo on GitHub. You will write a simple loop that does basically
+                what that does:
+                <ul>
+                  <li>Watch Binance prices</li>
+                  <li>Calculate the EWMA between Binance and Hyperliquid</li>
+                  <li>
+                    Place HL orders near Binance prices after adjusting for the EWMA, cancel them when
+                    Binance moves
+                  </li>
+                </ul>
+              </li>
+              <li>
+                After doing that, spin up a $50/mo AWS Tokyo server, secure it, and start running
+                some trades.
+              </li>
+            </ul>
+
+            <p>Make
+              sure your bot can, say, take order directions from a REDIS DB and turn that into
+              trades without crashing or losing too much money.</p>
+
+            <p><strong id="orchestration">2. Orchestration</strong></p>
+
+            <p>Now
+              that you can place orders, you need scaffolding to direct that order placement and
+              understand it. Build out your bot into.
+            <ul>
+              <li>Something that splits out orders and trades toward a target position
+              <li>Risk measurement and reporting
+              <li>A dashboard (NiceGUI works) to monitor performance and control your bot
+              <li>PagerDuty alerts on positions
+              <li>Automated circuit breakers and sanity checks
+              <li>Standard logging: crashes, CPU spikes, weird API behavior, etc.
+            </ul>
+
+            <p>Why
+              bother with all this for a $500 HL account making $10 trades? Because launching
+              a real-money bot without this stuff would be dumb. You're testing in prod with a small account.</p>
+
+            <p><strong id="performance-measurement">3. Performance Measurement</strong></p>
+
+            <p>The
+              third step is measuring performance. This is incredibly important, because a lot
+              of what you are going to be doing is iteratively improving 1 based on the metrics
+              from this. An entire industry exists for this. </p>
+
+            <p>Big
+              picture, focus on execution first.</p>
+
+            <p>Are
+              the prices you get filled at good?
+            <ul>
+              <li>Execution vs hypothetical Binance hedge at the microprice (hedging slippage)
+              <li>Execution vs later HL microprice trades (markout)
+              <li>Execution vs your model price (implementation shortfall)
+              <li>Hedge performance itself, adjusted for BTC beta (hedge alpha vs systematic exposure)
+              <li>Model performance (signal alpha, currently EWMA in your low-quality bot)
+            </ul>
+
+            <p>For
+              all of those measures, but especially the long term measures, you want to strip
+              away as much noise as possible. I tend to do this by controlling for movements in
+              the Binance prices of either the crypto in question or BTC. If the Binance price
+              was perfectly fair, how could be use it to reduce variance? </p>
+
+            <p>So
+              instead of doing </p>
+
+            <p>Profit
+              = Sell price - Buy price</p>
+
+            <p>You
+              decompose your returns into…</p>
+
+            <p>Profit
+              = Sell price - Price from Binance at sale - Venue adjustment + Medium term change in fair price
+              on Binance due to that coin + Medium term change in fair price on Binance due to
+              broad market moves - (Buy Price - Price on Binance -
+              Venue adjustment)</p>
+
+            <p>Each
+              of those can be measured separately, stripping away the noise created by broad market
+              moves allows you to better measure the actual gains you create.</p>
+
+            <p>When
+              you have an infra here, test the big MMs on HL. They typically make ~0.2-1 bp. If you see them making or
+              losing
+              huge sums, you
+              are wrong.</p>
+
+            <p>Do
+              other measures look good?</p>
+
+            <p>In
+              medical trials, they often look at blood pressure rather than heart attack deaths.
+              Why? Because blood pressure is easy to measure whereas heart attacks are mostly
+              random and the result of long term factors. Blood pressure is a surrogate endpoint
+              for the heart attacks we actually care about.</p>
+
+            <p>Tick-to-trade
+              is the primary surrogate endpoint for my execution. You want to measure the time
+              from a Binance web socket post to a cancel order. You measure this not because it
+              is inherently important, but because you can measure this extremely accurately.
+            </p>
+
+            <p>You
+              will measure it and you will work to shorten it. But always keep in mind that your
+              local deli accepts cash, not ns. You are using tick to trade ONLY because it is
+              easy to measure and allows you to iterate fast. </p>
+
+            <p>Implementation
+              tips:
+            <ul>
+              <li>Log to Postgres
+              <li>Wire metrics to dashboard
+              <li>Don't calculate on hot path
+              <li>Ignore actual fees at first, assume a decent fee tier. You will optimize later.
+            </ul>
+            </p>
+
+            <p><strong id="git-gudder">4. Git Gud (or at Least Less Bad)</strong></p>
+
+            <p>You
+              won't get good but you can suck less. Once you have measurement and
+              risk checks in place, you should be losing only a handful of basis points per trade.
+              Set your bot to do a thousand trades a day (trade against the stuff that is cheap
+              or expensive vs Binance) and measure what comes out. If your bot is doing dumb stuff,
+              stop it from doing that dumb stuff.</p>
+
+            <p>Tune
+              your bot to improve your metrics until you get to a reasonable level. What is reasonable?
+              I'd say your execution costs on small
+              trades executed passively should be less than 2 basis points plus the difference
+              between your fee tier and the top MM fee tier. That should be easy to hit. Keep
+              in mind, you aren't trying to make money (yet), you
+              are just getting to a position where you can move risk around without losing too
+              much money.</p>
+
+            <p><strong id="start-making-money">5. Start Trying to Actually Make Money</strong></p>
+
+            <p>If
+              your are making money after step 4, you screwed up. Revisit step 3.</p>
+
+            <p>When
+              you're confident you are in okay shape,
+              then you pick your role. Broadly, I see a few paths to success:</p>
+
+            <p><strong>A. Predict Prices Based on Other Venues' Prices</strong></p>
+
+            <p>If
+              something is trading at $10 on one venue and $11 on the other, there is a good chance
+              one of those is wrong. The obvious trade is to buy the cheap one and sell the expensive
+              one. Take that logic and scale it. </p>
+
+            <p>Your
+              first step should be to download both CCXT and Hummingbot. You want to carefully
+              note every venue they support. Then you should not only DELETE both CCXT and Hummingbot,
+              you should avoid EVERY SINGLE VENUE they support. If a venue is supported there,
+              don't bother, you won't make money. No old venues. </p>
+
+            <p>Why
+              not? Well, for starters I'm there and even worse maybe Wintermute
+              or goblin or loris or someone else better than me is there. I've been running that bot for years,
+              I've tuned it, I've worked out the
+              API quirks, it will be hard for you to compete. But even if your bot is BETTER than
+              mine, you still won't win. Why? I'm willing to run my bots for basically zero profit.
+              Even if I'm not making money today, keeping
+              them going keeps my optionality, supports a platform I have a bunch of points on
+              (or relationship with the team etc.), and gives me the ability to build up exposures
+              I like or hedge risk from another venue. Even if you are a better coder, you can't compete with that.</p>
+
+            <p>So
+              you go to NEW PLACES. The API may be broken, there isn't that much volume, and you are slightly worried
+              you
+              will lose all your money. Those are bad, obviously, but the pros aren't there and even if they are
+              entering,
+              both you and
+              the pros are starting from square one.</p>
+
+            <p>Beyond
+              the competition aspect, crypto is a game of lottery tickets. Old venues are not
+              winning tickets. New venues may well be. I won with Hyperliquid, I lost with a DOZEN
+              other venues. If you want to win, you need to be going to places you CAN win.</p>
+
+            <p>On
+              that new venue, you will absorb risk. Your goal is NOT to make money on every trade
+              - your goal is to get into a position
+              where you would make money if you perfectly hedged every trade on Binance at no
+              cost. You don't HAVE to hedge, this is just a reference.
+              The governing assumption is that if you are trading on some degen den, then they
+              aren't adversely selecting against you
+              and changes in the Binance price are just random noise. So if you get filled for
+              better than Binance mids every day, the times the degens lose will more than balance
+              out the times degens win.</p>
+
+            <p>This
+              risk absorption could be high frequency. For that, you likely want to specialize
+              in a few venues, build up good relationships, learn the API quirks. You will optimize
+              for those (few) venues, try to take 30-40% of their orderflow for a decent return.
+            </p>
+
+            <p>It
+              could be low frequency, e.g., funding rate arbitrage. For this, you model the paths
+              of funding rates and how much leverage you can safely take. While higher frequency
+              was about depth, this is more about breath -
+              you want to have more opportunities to pick from, so you want to have coverage on
+              many futures venues.</p>
+
+            <p><strong>B. Predict Prices Using Prices</strong></p>
+
+            <p>A
+              lot of people start with modeling prices using prices. It seems so tempting. You
+              download the download Binance data, backtest, and are amazed at the excellent returns
+              you found. </p>
+
+            <p>Unfortunately,
+              you found excellent returns because you screwed up. Rule of thumb: if you think
+              you found a 3 Sharpe ratio trading on Binance using price data, you found it
+              because you screwed up.</p>
+
+            <p>Somewhat
+              informally, I view the returns here as being of two types: alphas and betas</p>
+
+            <p>Alphas
+              are the price being wrong. The price of LUNC gets thrown out of whack because of
+              hedging done by a weird instrument. The contract specs of a weird venue mean funding
+              is paid based on an idiosyncratic formula, the market maker is dumb and hasn't realized this. A Korean
+              venue
+              posts listing announcements
+              on its site early if you can guess the URLs.  These alphas are great but they are
+              short lived and have limited capacity - markets tend toward efficiency.
+              People tend not to talk about alpha because if you leak them they get traded away.</p>
+
+            <p>Betas
+              are risk premia ' momentum, reversal, funding rate
+              patterns, shit coins going to zero. These are well known, big, people trade on them.
+              They exist because there isn't enough smart money in crypto to
+              absorb them.</p>
+
+            <p>You
+              can tell by the examples I gave that alphas usually aren't coming from prices alone
+              (they can, of course). Very likely, the prices give you a clue something is going
+              on. You will then keep pulling the thread until you find out the cause of the distortion.
+              Then you will trade on that.</p>
+
+            <p>Most
+              of what you see in the candles will be betas. Betas are still pretty good in crypto,
+              but they are there because taking the other side is unpleasant. I think ScottPh77711570
+              gives a solid feel for the action technical analysis returns give. macrocephalopod
+              is of course an all time great.</p>
+
+            <p>If
+              you like betas, you should try to get a bunch of somewhat different ones so the
+              winners balance the losers (and keep in mind that when things go bad, everyone who
+              had that genius idea will be unwinding at the same time and they will all be correlated).</p>
+
+            <p><strong>C. Predict Prices using New Data</strong></p>
+
+            <p>If
+              you want alphas, you are more likely to find them by looking deeply into the oddities
+              of market structure than you are to find them by running ML models on Binance price
+              data.  </p>
+
+            <p>The
+              low tech approach here is to just do whatever you did as a degen gambler, but slightly
+              better because you have less slippage using your bot. I do some of this - I type
+              in my target allocation and my bots tilt my trading to move toward that allocation.
+              E.g., I short MSTR and rely on my bot to hedge out the BTC risk.</p>
+
+            <p>For
+              me at least, the higher tech approaches often emerged from the lower tech approaches.
+              Whenever you see something weird, you should be thinking - does this weirdness create
+              an opportunity? If so, can I write code that captures this weirdness and trades
+              against it every time it happens.</p>
+
+            <p>Again,
+              you want to focus on things that Wintermute ISN'T
+              DOING. Sadly, this means you probably want to focus on things that DO NOT scale.
+              Why? Because if it could scale, someone better than you (are now) is doing it.</p>
+
+            <p>Buying
+              Bitcoin on Binance based on a DataBento CME subscription? That isn't going to work.</p>
+
+            <p>Buying
+              HL memes to front run TWAPs or large deposits? That might work.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-12  ">
+        <div class="card ">
+          <div class="card-title">
+            Make money:
+            <span>Don't Trade</span>
+          </div>
+          <div class="card-body">
+
+            <p>I
+              repeatedly tell people not to start trading, and to quit if they are ahead. Very
+              few people have the skills required to do this well. Trading is not a zero-sum game;
+              once you account for fees, spreads, slippage, and outright scams, it is a negative-sum
+              game.</p>
+
+            <p>The
+              ratio of people who actually know what they are doing to people who are effectively
+              doomed is extremely low. I personally make a lot of money trading, but that fact
+              is not especially informative. I have also used all sorts of drugs without developing
+              an addiction. If a teenager outside a liquor store asked me to buy them alcohol,
+              I would not tell them that I never had a problem with opiates and that insulin needles
+              are easy to buy. I would tell them to stay in school.</p>
+
+            <p>Even
+              if you <i>do</i> have the skills, trading your own account is usually a bad idea.
+              If you are genuinely good enough to make money trading, you should either be doing
+              something else entirely, or trading other people's money in an environment that
+              allows you to scale, learn, and be challenged by a high-skill peer group. Trenching
+              garbage capital does not count, and neither do most paid trading groups. The kind
+              of trading that makes money in crypto, in particular, is often a dead end.</p>
+
+            <p>Most
+              retail traders -- whether in crypto, Robinhood equities, FX, or elsewhere -- look
+              a lot like gambling addicts. In crypto especially:</p>
+
+
+            <ul>
+              <li>Almost all retail
+                traders have negative edge</li>
+              <li>Crypto regularly
+                turns lucky gamblers into rich people</li>
+              <li>Even many “successful”
+                discretionary traders are just beneficiaries of luck, not skill</li>
+            </ul>
+
+            <p>I
+              am genuinely mystified by the behavior. How can Coinbase charge 2 percent fees and
+              still have enormous volume? Why do people trade on venues like MEXC? Why are they
+              trading at all?</p>
+
+            <p>From
+              the outside, it looks less like investing or skill acquisition and more like a mix
+              of entertainment, lottery-ticket thinking, and addiction. For most people, the dominant
+              strategy is not to find a better exchange, a better indicator, or a better strategy.
+              It is simply not to play.</p>
+
+            <p><strong id="dont-trade-options">Especially Don't Trade TradFi Options or Structured Products</strong></p>
+
+            <p>If
+              there is one category of trading retail should <i>especially</i> avoid, it is traditional
+              finance options and structured products.</p>
+
+            <p>Robinhood
+              makes a huge amount of money from options trading. Wealth management firms make
+              a huge amount of money selling options and exotic structures. That fact alone should
+              tell you who is winning. The flip side is simple: you, the buyer, are getting hosed.</p>
+
+            <p>At
+              a fundamental level, any edge available to retail traders in TradFi is going to
+              be small. It usually comes from taking on some hard-to-hold risk or trading in a
+              niche market that institutions do not care enough about. If you believe you are
+              routinely finding large, clean edges in listed options as a retail trader, you are
+              wrong and should stop trading.</p>
+
+            <p>Option
+              markets are dominated by wide spreads, adverse selection, and professional counterparties.
+              The bid-ask alone is often large enough to swamp any edge a retail trader could
+              plausibly have. Whatever you think you have discovered is almost certainly already
+              priced, and priced aggressively.</p>
+
+            <p>Many
+              people believe options reduce risk. They do not reduce risk; they transfer it. When
+              you buy options, you are paying someone else -- usually a hedge fund or a market
+              maker -- to take risk you do not want. As a retail investor, you are not going to
+              win that trade on average.</p>
+
+            <p>This
+              is not an argument for covered calls either. Covered calls are just the mirror image:
+              you are selling risk back to the same institutional players, either directly or
+              at prices set by a market maker whose business is trading against much more sophisticated
+              participants. You are still the weak side of the trade.</p>
+
+            <p>I
+              am posting this because I see crypto traders -- some of whom I believe actually
+              have alpha -- buying TradFi options. In my view, they are lighting money on fire.
+              There is a reason some surgeons refer to motorcyclists as “organ donors.” That is
+              roughly how many TradFi professionals think about retail options and structured
+              product traders.</p>
+
+            <p>One
+              important caveat: this logic applies much less to crypto. Crypto options are often
+              mispriced, sometimes badly. In crypto, strategies that would be a punchline in TradFi
+              can actually work. Python HFT is a good example. The market structure, participants,
+              and level of sophistication are simply very different.</p>
+
+            <p>But
+              in TradFi options and structured products, the conclusion is straightforward: do
+              not trade them.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-12  ">
+        <div class="card ">
+          <div class="card-title">
+            Make money:
+            <span id="trade-gud">Trade Gud</span>
+          </div>
+          <div class="card-body">
+            <p><strong id="fundamental-edge">What Is Your Fundamental Edge?</strong></p>
+
+            <p>First,
+              you should understand why you made money (if you did) or how you could hope to
+              make money.</p>
+
+            <ol>
+              <li> You understand
+                the ebb and flow of markets and take concentrated, unhedged exposure based
+                on information.<br>
+                This requires being deeply plugged in to everything, all the time.<br>
+                Examples include @0xAnteater, @TheCryptoNexus, @izebel_eth, @NMTD8.<br>
+                The catch: most people who think they are here are actually in bucket #2. </li>
+              <li> You are
+                extremely good at execution.<br>
+                Examples include @laurentzimes and @liquiditygoblin.<br>
+                This is extremely hard. I was at the top of a truly elite group and still stopped
+                because it became too difficult.<br>
+                Goblin is often described as “the smartest person I've ever met.”  </li>
+              <li>You are good at
+                understanding risk and taking diversified, unhedged exposure.<br>
+                An example is @ScottPh77711570.<br>
+                This is slightly less hard than pure execution, but still brutal.<br>
+                The drawdowns are horrifically painful, and most people cannot cope with
+                them. </li>
+              <li>You are very
+                good at reading the fucking manual.<br>
+                I put myself in this bucket more than #4.<br>
+                The problem is that this rarely scales: the important manuals already have
+                a dozen people who read them carefully.</li>
+              <li>You are a lucky
+                degen.<br>
+                Most degens eventually give it all back, and then some.<br>
+                This is much easier in crypto than in TradFi, but it is still a mostly negative-sum
+                game.<br>
+                Trenches and <a href="http://pump.fun" target="_new"><span>http://pump.fun</a>  are especially
+                bad.
+                Perp
+                DEXs are somewhat better.</li>
+              <li>You were in the
+                right place at the right time.<br>
+                This applies to me and to most OGs to some extent.<br>
+                The issue is that you usually aren't.<br>
+                That said, right now actually <i>is</i> a time when there is a lot of money
+                lying around to be picked up.</li>
+              <li>You move
+                markets by using followers as exit liquidity.<br>
+                Plenty of examples exist. I am not listing names.<br>
+                The problem is obvious: you are either an oblivious moron or a colossal
+                asshole.</li>
+            </ol>
+
+            <p>If
+              you think you make money through some way that isn't above, that's a bad sign. </p>
+
+            <p>More
+              practically, what should a retail trader do if they want to get better?</p>
+
+            <p><b>Benchmark
+              </b></p>
+
+            <p>If
+              you want any hope of winning, you need to identify what works and do more of
+              it. To do that, you need benchmarking. Buying GOONCOIN because you thought it
+              was a great meme and then winning because of an inflation print doesn't mean
+              you have skill – it's just luck. You need to try to figure out  whether the decision-making
+              process behind that bet had positive expected value. </p>
+
+            <p>Two
+              simple ways to improve this immediately:</p>
+
+            <ul>
+              <li><b>Denominate
+                  trades in the relevant ecosystem.</b>
+                If you're trading alts, measure performance in ETH or SOL, not USD.</li>
+              <li><b>Use pair
+                  trades (or at least benchmark).</b>
+                For example, long HYPE / short BNB. This bakes the benchmark in and forces
+                you to isolate what you think your edge actually is.</li>
+            </ul>
+
+            <p><b>Stop
+                using strategies that imply you can predict the broad market</b></p>
+
+            <p>Here's
+              an analogy. Suppose a friend tells you they've figured out how to turn lead into
+              gold using household chemicals. If you know even a little chemistry or history,
+              you know they're wrong. You don't need to see the formula. People have tried this
+              for millennia and failed, and we understand why.</p>
+
+            <p>Predicting
+              short-term movements in the broad stock market is similar. It's not impossible,
+              but it is extremely hard. People get paid millions of dollars a year to predict
+              it <i>slightly</i> better than chance. If your strategy implies you can do it reliably,
+              you are wrong.</p>
+
+            <p><b>Stop
+                obsessing over cost basis</b></p>
+
+            <p>Whether
+              a position is good or bad has nothing to do with what you paid for it or how much
+              you've already lost. Cost basis is sunk. It is irrelevant.</p>
+
+            <p>People
+              hate realizing losses, so they let losers grow. Then they blow up.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-12  ">
+        <div class="card">
+          <div class="card-title">
+            Make money:
+            <span id="tax-struct">Legally Avoid Tax and Clawbacks</span>
+          </div>
+          <div class="card-body">
+
+            <p>For
+              individuals engaged in active trading, establishing a corporate structure can offer
+              meaningful advantages in both tax treatment and legal risk management. In many jurisdictions,
+              traders operate through an operating company owned by a holding company, a structure
+              that is fairly common and well understood by professionals. The primary benefits
+              are twofold. First, corporate entities may allow for tax deferral or modest reductions
+              in the effective tax rate. Second, losses or negative balances incurred by the operating
+              company are typically ring-fenced, meaning they cannot be charged against the holding
+              company or the trader personally, provided the structure is set up and maintained
+              correctly.</p>
+
+            <p>That
+              said, which structures work - and which do not - is highly region-specific. Tax
+              law, securities regulation, and corporate liability rules vary widely across countries
+              and even across sub-national jurisdictions. A sensible approach is to use tools
+              like ChatGPT to sketch out the broad pros and cons of potential structures and to
+              identify the types of professionals who are best suited to advise on them. From
+              there, one can ask their personal or professional network to help identify reputable
+              experts with relevant experience.</p>
+
+            <p>It
+              is also important to speak with multiple professionals on at least an introductory
+              basis. Comparing advice helps reveal both consensus views and potential red flags.
+              Once those relationships are established, general questions can again be routed
+              through ChatGPT, reserving paid professional time for issues that truly require
+              bespoke legal or tax advice.</p>
+
+            <p>Finally,
+              expectations should be kept firmly in check. Proper structuring can reduce legal
+              liability, allow for tax deferral, and modestly lower the overall tax burden. It
+              is not a magic solution. Professionals operating in offshore financial centers often
+              promise far more aggressive outcomes, but such arrangements frequently carry substantial
+              legal and regulatory risk, including the possibility of serious criminal penalties.
+              Conservative, well-documented structures may be less exciting, but they are far
+              more likely to achieve the intended benefits without creating new and far more severe
+              problems.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-12  ">
+        <div class="card">
+          <div class="card-title" id="exchange-structure">
+            Exchange Structure:
+            <span id="attract-mm">How to Attract Market Makers</span>
+          </div>
+          <div class="card-body">
+
+
+            <p>Many
+              builders end up in a position where they want active liquidity on their platform.
+              They need someone who will quote prices for the thing they've dreamed up, keep inventory,
+              and stand ready to buy and sell. What should they do?</p>
+
+            <p>I'm
+              one of the people you may be targeting, so I'll try to give you what attracts me
+              to the platforms. I've been one of the first active liquidity providers for at least
+              a dozen projects.</p>
+
+            <p>Given
+              that, **this is what I want**. Note that EVERYTHING on this list is negotiable.
+              But the more costs you put onto me, the more I'm going to demand.</p>
+            <p><strong id="lower-barriers">Lower barriers to entry</strong></p>
+
+            <p><strong>Provide a Working SDK</strong></p>
+
+            <p>Many
+              builders assume pointing to an API spec is enough, but that's a mistake. Figuring
+              out signing by yourself is always a massive pain. Because of that, I am very reluctant
+              to integrate with a platform that lacks a proper SDK.</p>
+
+            <p>Making
+              an SDK is a version of dogfooding. If someone on your team can't quickly put together
+              an SDK, how on earth do you expect me to?</p>
+
+            <p>In
+              the age of chat GPT, the language of the SDK doesn't really matter. I'd suggest
+              either Python with type hints or TS to hit the widest possible audience.</p>
+
+            <p>**Actionable
+              Suggestion:** Post an SDK that covers the basic methods of your protocol. </p>
+
+            <p>**Role
+              Model:** I'd put BitMEX as the role model here. BitMEX not only provided an SDK,
+              they provided a basic MM bot. I think that's part of the platform's (past) success.</p>
+
+            <p><strong>Copy Existing Structures Where Possible</strong></p>
+
+            <p>Anything
+              that isn't your core innovation should be as close to established players as possible.
+            </p>
+
+            <p>If
+              I'm quoting on your platform, I'm going to be taking existing stuff (e.g., HL) and
+              making whatever changes are needed. Every deviation from the norm adds a cost. Minimize
+              unnecessary changes.</p>
+
+            <p>**Actionable
+              Suggestion:** Follow existing players unless you have a good reason not to. </p>
+
+            <p>**Role
+              Model:** Hyperliquid did a good job here - USDT indexes, a similar funding formula
+              to Binacne, and an AWS tokyo location made it easy to port Binance quotes over.
+              Something like Kraken Futures is an anti-role model: 24-hour factor futures with
+              unclear indices quoted in Europe is a nightmare for no good reason.</p>
+
+            <p><strong>Consider a Taker Speedbump</strong></p>
+
+            <p>Slowing
+              down taker orders by 100ms (e.g., Hyperliquid) makes it a lot easier to set up a
+              market making bot because you do not need to worry about being picked off by sniping
+              bots.</p>
+
+            <p><strong>Completely Describe of Cash Flows</strong></p>
+
+            <p>If
+              you want me to provide reasonable price quotes, you need to provide an exact and
+              detailed description of the cash flows of the assets being traded.</p>
+
+            <p>**Actionable
+              Suggestion:** Take two similar products, review their documentation, and ensure
+              yours covers everything they do. Information buried in Discord chats is not sufficient.</p>
+
+            <p>**Role
+              Model:**  Skimming through platforms, Hyperliquid's docs are okay. Kraken Futures
+              is poor. Whales Market is horrible.</p>
+
+            <p><strong id="trustworthiness">Make me comfortable I'm not going to lose my money</strong></p>
+
+            <p><strong>Convey Trustworthiness</strong></p>
+
+            <p>Everyone
+              needs confidence that their funds are safe. Personally, I look for backers I know
+              (VCs and ideally community members), a doxxed team, and a track record.</p>
+
+            <p><strong>Specific asks</strong></p>
+
+            <p>In
+              order of priority:
+              <li>API keys. I don't want to have to store keys with withdraw access remotely.
+              <li>Telegraphed changes. If I have a position in a contract and you change the contract,
+                I lose money. Even worse, if I don't realize there is a change I might be quoting
+                wrong and someone might take me to the cleaners.
+              <li>Informative error messages. Probably obvious.
+              <li>Clear information on rate limits. It's incredibly common for an MM to hit rate limits
+                and then be a sitting duck and have all their orders picked off.
+              <li>Deadman switches or order expirations. If my system crashs (e.g., because of your
+                system sending me garbage) or hits a hidden rate limit (above), I don't want to
+                lose a bunch of money.
+              <li>Multisig (this only matters at later stages).
+            </p>
+            <p><strong id="profitability">Show me I'm going to make money</strong></p>
+
+            <p><strong>Show Growth</strong></p>
+
+            <p>Everyone
+              wants growth, so this isn't really actionable. But realize that a lot of the integration
+              costs are a one-time cost. If I'm earning that dividend over a long time, it's a
+              much easier sell.</p>
+
+            <p>The
+              returns to integration increase as the platform grows. If your growth is stagnant
+              or uncertain, the cost of integration becomes harder to justify.</p>
+
+            <p><strong>Provide the information needed to assess profitability</strong></p>
+
+            <p>The
+              liquidity provider's profitability is of course the most important thing. I'm not
+              saying much here because I don't want to leak too much alpha to other MM. </p>
+
+            <p>My
+              suggestion here is just to provide information easily. Don't tell people to enquire
+              about the MM program on Discord and then reply three days later. Put it in the docs.</p>
+
+            <p>EG:
+              If you want better funding rates... make sure you have a funding rate history end
+              point to make life easy for funding arbers. Even better, put together a funding
+              rate comparison page (e.g., <a
+                href="https://app.hyperliquid.xyz/fundingComparison">https://app.hyperliquid.xyz/fundingComparison</a>).
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-12  ">
+        <div class="card">
+          <div class="card-title">
+            Exchange Structure:
+            <span id="no-rh">Robinhood won't work for crypto</span>
+          </div>
+          <div class="card-body">
+
+            <p>I've
+              seen a few posts recently about Lighter, the hot zero-fee perpetuals DEX, and its
+              future business model. One post that triggered me (and this essay) argued that good
+              market makers earn 10 basis points per trade—so the platform can just 'charge
+              them' and call it a business model. That logic doesn't hold up. Let's unpack
+              why. </p>
+
+            <p>Before
+              anything else: I like Lighter. I've ranked it in the tier just below Binance, Hyperliquid
+              (HL), and Bybit in my perp exchange rankings <a href="https://stalequant.github.io/bot_view.html"
+                target="_blank">here</a>. It isn't a
+              primary
+              venue for me, but it
+              is one of literally two new venues I trade on and I currently have millions in notional
+              open interest there and a few thousand dollars' worth of points. I prefer Hyperliquid,
+              but I admit my biases. </p>
+
+            <p>My
+              goal here isn't to FUD Lighter. It's to lay out what I see as economic realities
+              of the sector. </p>
+            <p><strong id="market-makers-barely-make-it">Market Makers Barely Make It</strong></p>
+
+            <p>If
+              a platform promises free trades for users, someone still has to pay the bills. The
+              obvious candidate is market makers (MMs). Hence the argument: just charge them.
+            </p>
+
+            <p>The
+              problem? 'Good' market makers make maybe 1bp before cost, plus a bit from
+              rebates. You can check this yourself: take the largest MMs on Hyperliquid, divide
+              their P&amp;L by their trading volume, subtract the maker rebates, and you'll see
+              something around 1bp. (Make sure to exclude spot, since the HYPE airdrop and HYPE
+              holding profit distorts the math.) </p>
+
+            <p>That
+              1bp is gross profit. It doesn't include the cost of actually running a market-making
+              operation: </p>
+
+            <ul>
+              <li>
+                hedging risk on other venues or facing drawdowns,
+              <li>
+                paying engineers and quants,
+              <li>
+                deploying millions in capital (and possibly staking more),
+              <li>
+                managing contract risk, platform risk, and the risk of being attacked,
+              <li>
+                paying AWS, data uplinks, and infrastructure costs.
+            </ul>
+
+            <p>None
+              of that is free.</p>
+
+            <b>Taxes on Market Makers Go Straight to Spreads</b>
+
+            <p>If
+              MMs are barely breaking even, what happens when you charge them? They widen their
+              spreads. A 10bp maker fee becomes a 20bp bid–ask spread. You could see this clearly
+              on Kraken, which historically had high maker fees and correspondingly wide spreads.
+            </p>
+
+            <p>That's
+              why most exchanges do the opposite: they pay maker rebates. Hyperliquid pays 0.3bp,
+              and many venues pay even more. Charging MMs is fighting gravity—it pushes spreads
+              up, liquidity down, and retail away. </p>
+            <p><strong id="robinhood-model">Robinhood Isn't What You Think</strong></p>
+
+            <p>You
+              might challenge what I'm saying and point out that Robinhood makes money on equity
+              trades: If they make money on zero-fee TSLA trades, why can't Lighter make money
+              on BTC perps? </p>
+
+            <p>But
+              actually PFOF on equity isn't a core part of Robinhood's model. Their profits come
+              from: </p>
+
+            <ul>
+              <li>0.5% crypto fees
+                (even Robinhood isn't using the 'Robinhood' model on crypto),
+
+              <li>massive PFOF
+                on options, and
+
+              <li>interest income
+                on idle balances.
+            </ul>
+            <p>Don't
+              take my word for it—check the filings. Roughly 40% of Robinhood's trading volume
+              is equities, yet equities produce only about 6% of revenue. Within that, large-cap
+              names like TSLA contribute disproportionatelylittle. </p>
+            <p><strong id="pfof-spreads">PFOF Works Because of Spreads</strong></p>
+
+            <p>PFOF
+              works when you can segment traders and share part of a wide spread. </p>
+
+            <p>In
+              TradFi, suppose a stock has a $100 / $101 bid–ask. That $1 spread covers market
+              makers' risk of being run over by smarter traders. They make money when uninformed
+              ('dumb') traders buy at $101 and lose money when informed ones buy before
+              news hits $102. </p>
+
+            <p>If
+              you can separate the dumb flow, you can offer it a better price—say $100.8 instead
+              of $101—while still earning a profit. The leftover margin can be shared between
+              the broker and the market maker. </p>
+
+            <p>No
+              spread, no PFOF.</p>
+            <p><strong id="crypto-spreads">Crypto Spreads Are Tiny, So PFOF Doesn't Work</strong></p>
+
+            <p>Crypto
+              perps don't have that room. Spreads are microscopic. If BTC trades at 100,000.12
+              / 100,000.13, there's simply no economic space to pay for order flow. </p>
+
+            <p>That's
+              why, again, Robinhood earns little from equities. Equity trading dominates volume
+              but not profits. Within equities, tiny small caps with wide spreads generate most
+              of the PFOF revenue (e.g., here: <a
+                href="https://brokerchooser.com/education/news/data-dashboard/payment-for-order-flow">https://brokerchooser.com/education/news/data-dashboard/payment-for-order-flow</a>).
+              In crypto perps, there's no equivalent—spreads are too tight to extract meaningful
+              value. </p>
+            <p><strong id="retail-flow">Retail Flow Has Value, But Isn't Magic and Is Hard on DEXs</strong></p>
+
+            <p>Segmenting
+              users does help, even if you aren't giving them price improvement like PFOF. 'Bucket
+              shop' CEXs like M*** or B***** do this aggressively—by banning or throttling
+              skilled traders to protect the flow of the people dumb enough to use their platforms.
+              That's one way to keep spreads profitable: kick out the smart money. </p>
+
+            <p>DEXs
+              can't do that. One thing they can do is play around with the microstructure. Hyperliquid
+              was one of the first to add taker speed bumps and many venues (incl. Lighter I believe)
+              have followed their leads. A short delay blunts toxic taker strategies without hurting
+              normal users much, allowing tighter spreads for everyone else. </p>
+
+            <p>That's
+              fairer than banning good traders—but there's a ceiling and I think current speedbumps
+              are already at that. DEXs can't stop anonymous addresses or shady on-chain behavior.
+              Toxic flow is part of the game. I've personally been carried out by insider flow
+              on DEXs; it happens. Unless Lighter has a new way to handle that, these constraints
+              remain. </p>
+            <p><strong id="microstructure-pisses-users">Going Further With Microstructure Tricks Will Piss Off
+                Users</strong></p>
+
+            <p>You
+              can go beyond speed bumps and build hidden subsidies into the system—essentially
+              transferring a few extra bp from takers to makers. </p>
+
+            <p>That
+              sounds appealing. But, I think Hyperliquid's microstructure is about as 'screwy'
+              as users will take - and Hyperliquid's MMs are earning a 1.3bp profit including
+              a maker rebate. Cranking the knobs further risks turning your venue into what feels
+              like a 'rigged game.' </p>
+
+            <p>And
+              it's important to distinguish this from PFOF. PFOF gives users better prices through
+              segmentation. Microstructure gimmicks (beyond segmentation) usually do the opposite
+              and gives worse fills despite zero fees. </p>
+
+            <p><strong id="zero-fees-wont-last">Even If Zero Fees Work Now, They Won't Forever</strong></p>
+
+            <p>It's
+              possible Lighter currently charges MMs modest fees and they're happily paying. That
+              doesn't make it sustainable. </p>
+
+            <p>I've
+              been there. Years ago, I was the #2 or 3 MM on a platform that launched with zero
+              fees and point rewards. I happily ran tight spreads and farmed the point farmers.
+              Then points ended, a small fee was added, and the flow turned toxic. Spreads widened,
+              volume cratered, and the venue faded. </p>
+
+            <p>Lot's
+              of stuff works when you are pumping money into the system.</p>
+
+            <p><strong id="zero-fees-how">How Can Exchanges Fund Zero Fees?</strong></p>
+
+            <ul>
+              <li>
+                Charge MMs and let them pass it to users via wider spreads. Users
+                won't love that.
+              <li>
+                Charge MMs but pay them back in tokens. Works short term, ends with
+                heavy dilution (see: VERTEX).
+              <li>
+                Hide the costs via microstructure tricks. Might fool users temporarily;
+                long-term, it erodes trust.
+              <li>
+                Find other revenue streams—like Robinhood's interest income. Feasible,
+                but doesn't support high valuations.
+              <li>
+                Charge modest retail fees. Boring but sustainable—and the normal competitive
+                equilibrium anyway.
+            </ul>
+
+            <p>More
+              generally, I'm not convinced that
+              'zero fees' are a strong selling point for perp traders. My impression:
+              they care more about UI, reputation, farming, liquidity, leverage, and market access,
+              with fees being less important. That's actually GOOD news for Lighter in a way:
+              it suggests their success
+              is driven by things other than simply being cheap. </p>
+
+            <p><strong id="bottom-line">The Bottom Line</strong></p>
+
+            <p>Crypto
+              just doesn't have the wide spreads or clean flow segmentation that make PFOF viable
+              elsewhere. Unless Lighter invents a genuinely new way to extract value—beyond rebates,
+              points, or stealth microstructure tweaks—it's hard to see how the math works out.
+            </p>
+
+            <p>None
+              of this means Lighter will fail. They have a good product and a good team. I just
+              don't see PFOF or zero fees more generally as viable paths forward, unless Lighter
+              invents a genuinely new way to extract value—beyond rebates, points, or stealth
+              microstructure tweaks. </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-12  ">
+        <div class="card">
+          <div class="card-title">
+            Exchange Structure:
+            <span id="trans">Transparency in Trading</span>
+          </div>
+          <div class="card-body">
+
+            <p>Concerns
+              about transparency in electronic markets, especially on venues like Hyperliquid,
+              often center on fears of predation. Traders worry that their positions, stop-losses,
+              or liquidation levels are visible and actively exploited. Based on what I have seen,
+              these concerns are frequently overstated. I expected to find clear evidence that
+              detailed trader positioning or liquidation data was being systematically incorporated
+              into the order book. Instead, I found very little. Many liquidations that get attributed
+              to being “hunted” tend to coincide with broad market events, such as a weak NYSE
+              open or an inflation print, rather than targeted behavior.</p>
+
+            <p>That
+              said, transparency should create winners and losers. This is not a bug; it is the
+              point. The question is who loses. The main groups are traders with extremely toxic
+              information, such as insiders trying to quietly unload positions; traders with very
+              large positions, where direction and size themselves convey information; and traders
+              whose edge is so obvious that it can be easily copied once revealed.</p>
+
+            <p>For
+              the first two groups, the real cost of transparency shows up during the accumulation
+              phase. If others can infer that you are building a position, they can move the price
+              against you before you finish. For the third group, the intuition is that transparency
+              should be damaging, but in practice it often is not. High-frequency strategies are
+              extremely hard to reverse-engineer from order flow alone. Discretionary skill is
+              also difficult to identify from trading history, and when others do attempt to copy
+              successful traders, they often end up pushing prices in the original trader's favor.
+              The uncomfortable corollary is that traders without edge sometimes attribute losses
+              to transparency rather than to the absence of skill.</p>
+
+            <p>Most
+              traders, however, benefit from transparency. Giving worse prices to toxic or highly
+              informative flow necessarily improves prices for everyone else. This is the same
+              logic that underpins payment for order flow. Algorithmic traders should generally
+              not worry about being copied, and discretionary traders with real skill should not
+              worry much about information leakage. Those concerns are usually overstated.</p>
+
+            <p>The
+              popularity of dark trading venues is also widely misunderstood. Much of the migration
+              off-exchange is not about privacy itself. Payment for order flow is mostly about
+              the nature of the orders, not concealing information. Dark pools are attractive
+              largely because they offer lower fees and midpoint execution, which is partly regulatory
+              arbitrage. These structural features explain far more than secrecy alone.</p>
+
+            <p>Importantly,
+              transparency does not mean that all execution must be public. There are straightforward
+              ways to keep TWAPs, stop-losses, and conditional orders private. Hyperliquid does
+              not currently emphasize this, likely because the team believes this functionality
+              should live in third-party front ends rather than in the core protocol.</p>
+
+            <p>More
+              broadly, Hyperliquid has room to further mitigate transparency concerns through
+              structural changes such as transferable positions. If implemented well, this could
+              materially improve execution quality, even for very large accounts, and potentially
+              offer a better experience than centralized exchanges.</p>
+
+            <p>There
+              is one transparency issue that is more specific to Hyperliquid. Once mempools become
+              public, the interaction between visible taker orders and the taker speed bump starts
+              to resemble MEV on an order book. For example, makers may pull top-of-book liquidity
+              when they see a large taker order coming. This is solvable, but it is genuinely
+              more difficult than the other issues.</p>
+
+            <p>In
+              many ways, Hyperliquid already looks more like off-exchange trading than a traditional
+              exchange. Its microstructure reduces toxicity, and participants have some ability
+              to know who they are trading with, similar to dark pools, private rooms, or
+              payment-for-order-flow
+              arrangements. Contrary to common narratives, much off-exchange trading exists not
+              because traders want to hide who they are, but because they want to reveal it. Robinhood
+              users get good execution precisely because their flow signals low toxicity. ETFs
+              rebalance via RFQs because their trades are predictable and non-informative. Traders
+              choose venues to avoid being picked off by snipers and HFTs.</p>
+
+            <p>Seen
+              this way, transparency is not the enemy of good execution. With thoughtful market
+              design, it is often the mechanism that makes good execution possible in the first
+              place.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-12  ">
+        <div class="card">
+          <div class="card-title" id="mental-health">
+            Mental Health
+          </div>
+          <div class="card-body">
+
+            <p>Crypto
+              makes it very easy to win big, and even easier to gamble it all away. I've been
+              in some bad places myself, but I was able to make it a lot better with time and
+              effort. Even if you think it's all over, talk to someone and wait a week. If
+              you are right and if it's all over, what's a week? But maybe you are wrong.</p>
+
+            <p>No
+              matter how bleak it seems, financial losses can always be repaired. If you feel
+              like it's all over - don't drink or do drugs. Talk to someone in your life or
+              findahelpline.com</p>
+
+            <p>More
+              generally, if you are struggling with mental health, you should go through the
+              process on <a
+                href="https://lorienpsych.com/2021/06/05/depression/">https://lorienpsych.com/2021/06/05/depression/</a>.
+              And recognize it is a process. </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

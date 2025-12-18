@@ -7,7 +7,8 @@
   --bg-card: rgba(0, 0, 0, 0.45);
   --bg-card-hover: rgba(0, 0, 0, 0.60);
   --bg-card-passive: rgba(0, 0, 0, 0.60);
-  --bg-card-body: rgba(0, 0, 0, 0.50);
+  --bg-card-body: rgba(0, 0, 0, 0.25);
+  --bg-card-title: rgba(0, 0, 0, 0.5);
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.8);
   --link-primary: rgb(80, 210, 193);
@@ -62,6 +63,10 @@ body {
   line-height: 1.6;
 }
 
+body.index-page {
+  padding-bottom: 200px; /* roughly the cat height */
+}
+
 .container {
   flex: 1;
 }
@@ -69,14 +74,8 @@ body {
 /* ============================================
    TYPOGRAPHY
    ============================================ */
-h1 {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--spacing-lg);
-  letter-spacing: -0.02em;
-}
 
-h2, h3, h4 {
+strong {
   font-weight: var(--font-weight-semibold);
 }
 
@@ -116,6 +115,7 @@ a.dead-link:hover {
    ============================================ */
 .card {
   background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   transition: transform var(--transition-base), 
               box-shadow var(--transition-base),
@@ -124,18 +124,8 @@ a.dead-link:hover {
   overflow: hidden;
 }
 
-.card-passive {
-  background-color: var(--bg-card-passive);
-  border-radius: var(--radius-md);
-  transition: transform var(--transition-base), 
-              box-shadow var(--transition-base);
-  position: relative;
-  overflow: hidden;
-}
-
-
 .card-body {
-  padding: var(--spacing-xs) var(--spacing-xs);
+  padding: var(--spacing-md);
   background: var(--bg-card-body);
   color: var(--text-primary);
   backdrop-filter: blur(4px);
@@ -145,9 +135,36 @@ a.dead-link:hover {
   padding-top: 0;
 }
 
+.card-body strong {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.card-body strong:first-of-type {
+  margin-top: 0;
+}
+
+.card-body p,
+.card-body div {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+.card-body ul {
+  margin-left: 1.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.card-body li {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
 .card-title {
   padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-card-body);
+  background: var(--bg-card-title);
   color: var(--text-primary);
   font-variant: small-caps;
   font-size: var(--font-size-lg);
@@ -159,6 +176,7 @@ a.dead-link:hover {
   justify-content: space-between;
   align-items: center;
   gap: var(--spacing-md);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .card-title > a {
@@ -182,45 +200,7 @@ a.dead-link:hover {
   transition: opacity var(--transition-base), transform var(--transition-slow);
   width: 100%;
 }
- 
-
-.card-content-centered .links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-md);
-  justify-content: center;
-  align-items: center;
-}
-
-.card-content-centered a {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: stretch;
-  text-align: center;
-  padding: var(--spacing-2xl);
-  color: var(--text-primary);
-  font-weight: var(--font-weight-bold);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  transition: transform var(--transition-fast);
-}
-
-.card-content-centered a:hover {
-  transform: translateY(-2px);
-}
-
-.card-content-centered a img {
-  transition: transform var(--transition-fast);
-}
-
-.card-content-centered a:hover img {
-  transform: scale(1.1);
-}
-
-/* ============================================
+ /* ============================================
    LAYOUT UTILITIES
    ============================================ */
 .row.g-4 {
@@ -303,36 +283,6 @@ a.nav-parent:hover {
 }
 
 /* ============================================
-   LEGACY / COMPATIBILITY CLASSES
-   ============================================ */
-.link-columns {
-  column-width: 180px;
-  column-gap: 1.2rem;
-  text-align: left;
-}
-
-.link-block {
-  display: block;
-  border: 1px solid var(--text-primary);
-  break-inside: avoid;
-  margin-bottom: var(--spacing-lg);
-  padding: var(--spacing-md);
-  border-radius: var(--radius-sm);
-}
-
-.link-block a {
-  display: block;
-  text-decoration: underline !important;
-}
-
-.links-low h4 {
-  display: block;
-  font-size: large;
-  padding-bottom: 0;
-  margin-bottom: 0;
-}
-
-/* ============================================
    RESPONSIVE IMPROVEMENTS
    ============================================ */
 @media (max-width: 768px) {
@@ -345,9 +295,6 @@ a.nav-parent:hover {
     height: 250px;
   }
   
-  .card-content-centered {
-    padding: var(--spacing-lg);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -365,15 +312,6 @@ a.nav-parent:hover {
    ============================================ */
 /* Comps page now uses Bootstrap grid, so custom grid removed */
 
-.comps-card .bd {
-  padding: 8px;
-}
-
-.comps-leftCol {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
 
 .comps-picker {
   position: relative;
@@ -527,26 +465,6 @@ a.nav-parent:hover {
   gap: 6px;
 }
 
-.comps-optbtn {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
-  padding: 5px 8px;
-  font-size: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-
-.comps-optbtn:active {
-  transform: translateY(1px);
-}
-
-.comps-optbtn.active {
-  border-color: rgba(80, 210, 193, 0.55);
-  box-shadow: 0 0 0 3px rgba(80, 210, 193, 0.10);
-  background: rgba(80, 210, 193, 0.12);
-}
 
 .comps-details {
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -704,7 +622,7 @@ a.nav-parent:hover {
 canvas {
   display: block;
   width: 100%;
-  height: 360px;
+  aspect-ratio: 2 / 1;
 }
 
 .legend {
@@ -758,15 +676,10 @@ canvas {
   color: #ff7a7a;
 }
 
-
-canvas {
-  width: 100%;
-  aspect-ratio: 2 / 1;
-}
-
 @media (max-width: 980px) {
   canvas {
     height: 320px;
+    aspect-ratio: auto;
   }
 }
 
@@ -779,34 +692,13 @@ body {
   margin: 0;
 }
 
-.rates-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.rates-card .hd {
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.rates-card .hd h2 {
+.card .card-title h2 {
   margin: 0;
   font-size: 12px;
   color: var(--text-secondary);
   font-weight: 800;
   letter-spacing: 0.25px;
   text-transform: uppercase;
-}
-
-.rates-card .bd {
-  padding: var(--spacing-md);
 }
 
 .badge {
@@ -858,37 +750,6 @@ body {
   flex-wrap: wrap;
 }
 
-.rates-btn {
-  appearance: none;
-  border: 1px solid var(--border-subtle);
-  background: rgba(0, 0, 0, 0.3);
-  color: var(--text-primary);
-  padding: 10px 12px;
-  border-radius: var(--radius-lg);
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: transform var(--transition-fast), background var(--transition-base), border-color var(--transition-base);
-}
-
-.rates-btn:hover {
-  background: rgba(0, 0, 0, 0.5);
-  border-color: rgba(255, 255, 255, 0.25);
-}
-
-.rates-btn:active {
-  transform: translateY(1px);
-}
-
-.rates-btn.primary {
-  background: rgba(80, 210, 193, 0.2);
-  border-color: rgba(80, 210, 193, 0.4);
-}
-
-.rates-btn.primary:hover {
-  background: rgba(80, 210, 193, 0.3);
-  border-color: rgba(80, 210, 193, 0.5);
-}
 
 .grid2 {
   display: grid;
@@ -938,28 +799,6 @@ body {
   flex-wrap: wrap;
 }
 
-.tabbtn {
-  padding: 8px 10px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  background: rgba(0, 0, 0, 0.3);
-  color: var(--text-primary);
-  font-weight: 750;
-  font-size: 12px;
-  cursor: pointer;
-  user-select: none;
-  transition: background var(--transition-base), border-color var(--transition-base);
-}
-
-.tabbtn:hover {
-  background: rgba(0, 0, 0, 0.4);
-}
-
-.tabbtn.active {
-  background: rgba(80, 210, 193, 0.2);
-  border-color: rgba(80, 210, 193, 0.4);
-  box-shadow: 0 0 0 3px rgba(80, 210, 193, 0.10);
-}
 
 .toggles {
   margin-top: 10px;
@@ -1103,57 +942,7 @@ body {
 .ctrlpanel.open {
   display: block;
 }
-
-/* ============================================
-   HLP_SHARE PAGE STYLES
-   ============================================ */
-.hlp-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-  align-items: center;
-}
-
-.hlp-controls select,
-.hlp-controls .coin-btn {
-  background: rgba(0, 0, 0, 0.3);
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  padding: 0.4rem 0.75rem;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-size: 0.875rem;
-  transition: all var(--transition-fast);
-}
-
-.hlp-controls select option {
-  background: var(--bg-card);
-  color: var(--text-primary);
-}
-
-.hlp-controls select:focus,
-.hlp-controls select:hover {
-  background: rgba(80, 210, 193, 0.15);
-  border-color: rgba(80, 210, 193, 0.55);
-  outline: none;
-}
-
-.hlp-controls .coin-btn {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.hlp-controls .coin-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.25);
-}
-
-.hlp-controls .coin-btn.active {
-  background: rgba(80, 210, 193, 0.12);
-  border-color: rgba(80, 210, 193, 0.55);
-  box-shadow: 0 0 0 3px rgba(80, 210, 193, 0.10);
-  color: var(--text-primary);
-}
-
+ 
 /* ============================================
    DELISTING RECO PAGE STYLES
    ============================================ */
@@ -1165,26 +954,66 @@ body {
   margin-bottom: 1rem;
 }
 
-.filter-btn {
-  padding: 6px 12px;
+/* Base button class - merged filter-btn, rates-btn, tabbtn, comps-optbtn */
+.btn {
   border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 0, 0, 0.3);
   color: var(--text-primary);
   cursor: pointer;
+  font-weight: 700;
   font-size: 13px;
-  transition: all 0.2s ease;
+  transition: transform var(--transition-fast), background var(--transition-base), border-color var(--transition-base);
+  user-select: none;
 }
 
-.filter-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+.btn:hover {
+  background: rgba(0, 0, 0, 0.5);
   border-color: rgba(255, 255, 255, 0.25);
 }
 
-.filter-btn.active {
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn.active {
   border-color: rgba(80, 210, 193, 0.55);
   box-shadow: 0 0 0 3px rgba(80, 210, 193, 0.10);
   background: rgba(80, 210, 193, 0.12);
+}
+
+.btn.primary {
+  background: rgba(80, 210, 193, 0.2);
+  border-color: rgba(80, 210, 193, 0.4);
+}
+
+.btn.primary:hover {
+  background: rgba(80, 210, 193, 0.3);
+  border-color: rgba(80, 210, 193, 0.5);
+}
+
+/* Button variants */
+.filter-btn,
+.comps-optbtn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.comps-optbtn {
+  padding: 5px 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rates-btn {
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+}
+
+.tabbtn {
+  padding: 8px 10px;
+  border-radius: var(--radius-lg);
+  font-size: 12px;
+  font-weight: 750;
 }
 
 .data-table {
@@ -1286,36 +1115,6 @@ body {
   position: relative;
 }
 
-.methodology-section {
-  margin-bottom: 1.5rem;
-}
-
-.methodology-section h4 {
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  margin-top: 1.5rem;
-}
-
-.methodology-section h4:first-of-type {
-  margin-top: 0;
-}
-
-.methodology-section p,
-.methodology-section div {
-  margin-bottom: 1rem;
-  line-height: 1.7;
-}
-
-.methodology-section ul {
-  margin-left: 1.5rem;
-  margin-top: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.methodology-section li {
-  margin-bottom: 0.75rem;
-  line-height: 1.6;
-}
 
 #plotDiv {
   width: 100%;
@@ -1332,29 +1131,130 @@ body {
   margin-left: 8px;
   background: rgba(0, 0, 0, 0.3);
 }
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+ 
 
 .text-muted {
   color: var(--text-secondary) !important;
 }
 
-/* Override styles.css absolute positioning for card-body */
-.card .card-body {
-  padding: var(--spacing-xl) !important;
-  position: static !important;
-  left: auto !important;
-  right: auto !important;
-  bottom: auto !important;
-  top: auto !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
+/* Override for card-body in content sections */
+.card .card-body:has(> strong:first-child) {
+  padding: var(--spacing-xl);
+  background: transparent;
+  backdrop-filter: none;
 }
 
-.card h4 {
+.card strong {
   margin-bottom: var(--spacing-md);
   font-weight: 600;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.flex-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.inline-flex {
+  display: inline-flex;
+}
+
+.monospace {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.width-limited-800 {
+  max-width: 800px;
+}
+
+.spacer {
+  height: 12px;
+}
+
+/* ============================================
+   STALEGUN PAGE STYLES
+   ============================================ */
+#chart-container {
+  width: 100%;
+  height: 400px;
+  position: relative;
+}
+
+#watermark {
+  position: absolute;
+  font-size: 48px;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+#custom-legend {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-right: 25px;
+  cursor: pointer;
+}
+
+.legend-color {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+
+/* Stalegun-specific overrides for comps components */
+.stalegun .comps-dropdown {
+  position: fixed;
+  z-index: 9999;
+  min-width: 200px;
+}
+
+.stalegun .comps-ddItem.selected {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.stalegun .coin-btn {
+  margin-right: 10px;
+}
+
+.tape-box {
+  height: 260px;
+  overflow: auto;
+  line-height: 1.25;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.tape-box .rowline {
+  margin: 0 0 6px 0;
+}
+
+.tape-box .hyperliquid {
+  color: #35d07f;
+}
+
+.tape-box .binancefutures {
+  color: #ff6b6b;
+}
+
+.tape-box .binancespot {
+  color: #ffd37a;
+}
+
+.tape-box .stalegun {
+  color: #A444BE;
 }
