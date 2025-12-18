@@ -230,10 +230,6 @@ a.dead-link:hover {
   transition: color var(--transition-fast);
 }
 
-a.nav-parent:hover {
-  color: var(--link-hover);
-  text-decoration: underline;
-}
 
 .nav-children {
   list-style: none;
@@ -254,16 +250,9 @@ a.nav-parent:hover {
 
 .nav-children a {
   font-size: var(--font-size-sm);
-
-  transition: color var(--transition-fast), padding-left var(--transition-fast);
   display: inline-block;
 }
 
-.nav-children a:hover {
-  color: var(--text-primary);
-  text-decoration: underline;
-  padding-left: 4px;
-} 
 
 /* ============================================
    DECORATIVE ELEMENTS
