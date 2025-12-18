@@ -135,10 +135,14 @@ a.dead-link:hover {
 
 
 .card-body {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-xs);
   background: var(--bg-card-body);
   color: var(--text-primary);
   backdrop-filter: blur(4px);
+}
+
+.card-body + .card-body {
+  padding-top: 0;
 }
 
 .card-title {
@@ -152,7 +156,7 @@ a.dead-link:hover {
   margin-bottom: 0;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   gap: var(--spacing-md);
 }
@@ -162,6 +166,11 @@ a.dead-link:hover {
   align-items: center;
   gap: var(--spacing-xs);
   white-space: nowrap;
+}
+
+.card-title > span {
+  flex: 1;
+  text-align: left;
 }
 
 .card-img-top {
@@ -175,7 +184,7 @@ a.dead-link:hover {
 }
  
 
-.card-center .links {
+.card-content-centered .links {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-md);
@@ -183,7 +192,7 @@ a.dead-link:hover {
   align-items: center;
 }
 
-.card-center a {
+.card-content-centered a {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -199,15 +208,15 @@ a.dead-link:hover {
   transition: transform var(--transition-fast);
 }
 
-.card-center a:hover {
+.card-content-centered a:hover {
   transform: translateY(-2px);
 }
 
-.card-center a img {
+.card-content-centered a img {
   transition: transform var(--transition-fast);
 }
 
-.card-center a:hover img {
+.card-content-centered a:hover img {
   transform: scale(1.1);
 }
 
@@ -221,21 +230,18 @@ a.dead-link:hover {
 /* ============================================
    NAVIGATION TREE / HIERARCHICAL NAV
    ============================================ */
-.nav-tree,
-.essay-nav {
+.nav-list {
   list-style: none;
   padding-left: 0;
   margin: 0;
 }
 
-.nav-group,
-.essay-group {
+.nav-group {
   margin-bottom: 0.6rem;
   text-align: left !important;
 }
 
-.nav-parent,
-.essay-parent {
+.nav-parent {
   display: inline-block;
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
@@ -243,14 +249,12 @@ a.dead-link:hover {
   transition: color var(--transition-fast);
 }
 
-a.nav-parent:hover,
-a.essay-parent:hover {
+a.nav-parent:hover {
   color: var(--link-hover);
   text-decoration: underline;
 }
 
-.nav-children,
-.essay-children {
+.nav-children {
   list-style: none;
   margin: var(--spacing-xs) 0 0 1.1rem;
   padding-left: 0;
@@ -258,27 +262,23 @@ a.essay-parent:hover {
   transition: border-color var(--transition-fast);
 }
 
-.nav-group:hover .nav-children,
-.essay-group:hover .essay-children {
+.nav-group:hover .nav-children {
   border-left-color: rgba(255, 255, 255, 0.25);
 }
 
-.nav-children li,
-.essay-children li {
+.nav-children li {
   margin: 0.15rem 0;
   padding-left: 0.6rem;
 }
 
-.nav-children a,
-.essay-children a {
+.nav-children a {
   font-size: var(--font-size-sm);
 
   transition: color var(--transition-fast), padding-left var(--transition-fast);
   display: inline-block;
 }
 
-.nav-children a:hover,
-.essay-children a:hover {
+.nav-children a:hover {
   color: var(--text-primary);
   text-decoration: underline;
   padding-left: 4px;
@@ -287,7 +287,6 @@ a.essay-parent:hover {
 /* ============================================
    DECORATIVE ELEMENTS
    ============================================ */
-.corner-cat,
 .corner-decoration {
   position: fixed;
   bottom: 0;
@@ -299,7 +298,6 @@ a.essay-parent:hover {
   transition: transform var(--transition-slow);
 }
 
-.corner-cat:hover,
 .corner-decoration:hover {
   transform: scale(1.05);
 }
@@ -307,13 +305,13 @@ a.essay-parent:hover {
 /* ============================================
    LEGACY / COMPATIBILITY CLASSES
    ============================================ */
-.links-tiles {
+.link-columns {
   column-width: 180px;
   column-gap: 1.2rem;
   text-align: left;
 }
 
-.links-low {
+.link-block {
   display: block;
   border: 1px solid var(--text-primary);
   break-inside: avoid;
@@ -322,7 +320,7 @@ a.essay-parent:hover {
   border-radius: var(--radius-sm);
 }
 
-.links-low a {
+.link-block a {
   display: block;
   text-decoration: underline !important;
 }
@@ -347,7 +345,7 @@ a.essay-parent:hover {
     height: 250px;
   }
   
-  .card-center {
+  .card-content-centered {
     padding: var(--spacing-lg);
   }
 }
@@ -740,12 +738,12 @@ canvas {
 }
 
 .status-pill {
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 999px;
+  padding: 2px 6px;
+  margin: 0;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-subtle);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  white-space: nowrap;
 }
 
 .status-ok {
@@ -760,51 +758,6 @@ canvas {
   color: #ff7a7a;
 }
 
-.tape {
-  border-radius: var(--radius-md);
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  overflow: hidden;
-}
-
-.tape .chart-header {
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.tape .box,
-.tape-box {
-  height: 260px;
-  overflow: auto;
-  padding: var(--spacing-sm) var(--spacing-md);
-  white-space: pre;
-  line-height: 1.25;
-  font-size: 12px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
-
-.tape .rowline,
-.tape-box .rowline {
-  margin: 0 0 6px 0;
-}
-
-.tape .muted {
-  opacity: 0.75;
-}
-
-.tape .hl,
-.tape-box .hl {
-  color: #35d07f;
-}
-
-.tape .ex,
-.tape-box .ex {
-  color: #ff6b6b;
-}
-
-.tape .li,
-.tape-box .li {
-  color: #4aa3ff;
-}
 
 canvas {
   width: 100%;
