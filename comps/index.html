@@ -12,10 +12,11 @@
 </head>
 
 <body>
-  <div class="container py-2 px-4">
-    <!-- Header -->
-    <div class="row g-2 mb-2">
-      <div class="col-lg-12">
+  <div class="container py-4 px-4">
+    <div class="row g-4">
+
+      <!-- Header -->
+      <div class="col-12">
         <div class="card">
           <div class="card-title">
             <span>stalequant.com - crypto benchmarking</span>
@@ -23,50 +24,44 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Chart card -->
-    <div class="row g-4 mb-4">
+      <!-- Chart card -->
       <div class="col-12">
         <div class="card">
-          <div class="card-body" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+          <div class="card-body flex-col">
             <div id="comps-plot"></div>
-            <div style="display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap;">
-              <span class="comps-optLabel" style="margin: 0;">Targets:</span>
-              <div class="comps-picker" style="display: inline-block;">
-                <input id="inputTarget" type="text" placeholder="HYPE, SOL, etc." autocomplete="off"
-                  style="width: 200px;" />
+            <div class="flex-row">
+              <span class="comps-optLabel">Targets:</span>
+              <div class="comps-picker">
+                <input id="inputTarget" type="text" placeholder="HYPE, SOL, etc." autocomplete="off" />
                 <div class="comps-dropdown" id="ddTarget"></div>
               </div>
-              <ul class="comps-tokenList" id="listTarget"
-                style="display: inline-flex; margin: 0; padding: 0; vertical-align: middle;"></ul>
+              <ul class="comps-tokenList" id="listTarget"></ul>
             </div>
-            <div style="display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap;">
-              <span class="comps-optLabel" style="margin: 0;">Benchmarks:</span>
-              <div class="comps-picker" style="display: inline-block;">
-                <input id="inputBench" type="text" placeholder="BTC, ETH, etc." autocomplete="off"
-                  style="width: 200px;" />
+            <div class="flex-row">
+              <span class="comps-optLabel">Benchmarks:</span>
+              <div class="comps-picker">
+                <input id="inputBench" type="text" placeholder="BTC, ETH, etc." autocomplete="off" />
                 <div class="comps-dropdown" id="ddBench"></div>
               </div>
-              <ul class="comps-tokenList" id="listBench"
-                style="display: inline-flex; margin: 0; padding: 0; vertical-align: middle;"></ul>
+              <ul class="comps-tokenList" id="listBench"></ul>
             </div>
-            <div style="display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap;">
-              <span class="comps-optLabel" style="margin: 0;">Granularity:</span>
-              <div class="comps-optBtns" data-group="granularity" style="display: inline-flex;">
-                <button class="comps-optbtn" data-value="M">M</button>
-                <button class="comps-optbtn active" data-value="15M">15M</button>
-                <button class="comps-optbtn" data-value="H">H</button>
-                <button class="comps-optbtn" data-value="4H">4H</button>
-                <button class="comps-optbtn" data-value="D">D</button>
+            <div class="flex-row">
+              <span class="comps-optLabel">Granularity:</span>
+              <div class="comps-optBtns" data-group="granularity">
+                <button class="btn btn-secondary" data-value="M">M</button>
+                <button class="btn btn-secondary active" data-value="15M">15M</button>
+                <button class="btn btn-secondary" data-value="H">H</button>
+                <button class="btn btn-secondary" data-value="4H">4H</button>
+                <button class="btn btn-secondary" data-value="D">D</button>
               </div>
             </div>
-            <div style="display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap;">
-              <span class="comps-optLabel" style="margin: 0;">Benchmark Mode:</span>
-              <div class="comps-optBtns" data-group="benchmarkMode" style="display: inline-flex;">
-                <button class="comps-optbtn" data-value="raw">raw</button>
-                <button class="comps-optbtn active" data-value="demean_beta1">demean (beta=1)</button>
-                <button class="comps-optbtn" data-value="beta_adjust">beta adj</button>
+            <div class="flex-row">
+              <span class="comps-optLabel">Benchmark Mode:</span>
+              <div class="comps-optBtns" data-group="benchmarkMode">
+                <button class="btn btn-secondary" data-value="raw">raw</button>
+                <button class="btn btn-secondary active" data-value="demean_beta1">demean (beta=1)</button>
+                <button class="btn btn-secondary" data-value="beta_adjust">beta adj</button>
               </div>
             </div>
           </div>
@@ -74,8 +69,8 @@
             <div class="left">
               <div class="chev" id="compsChev">&#8250;</div>
               <div>
-                <div style="font-weight:800; font-size:13px; color:var(--text-primary);">Advanced...</div>
-                <div style="font-size:12px; color:var(--text-secondary);" id="compsCtrlSummary">
+                <div class="title">Advanced...</div>
+                <div class="summary" id="compsCtrlSummary">
                 </div>
               </div>
             </div>
@@ -84,41 +79,40 @@
           </div>
 
           <div class="ctrlpanel" id="compsCtrlPanel">
-            <div style="height:12px"></div>
+            <div class="spacer"></div>
 
             <div class="field">
               <label>Show comparables</label>
               <div class="comps-optBtns" data-group="comparables">
-                <button class="comps-optbtn active" data-value="auto">&lt;auto&gt;</button>
-                <button class="comps-optbtn" data-value="yes">yes</button>
-                <button class="comps-optbtn" data-value="no">no</button>
+                <button class="btn btn-secondary active" data-value="auto">&lt;auto&gt;</button>
+                <button class="btn btn-secondary" data-value="yes">yes</button>
+                <button class="btn btn-secondary" data-value="no">no</button>
               </div>
             </div>
 
             <div class="field">
               <label>Data source</label>
               <div class="comps-optBtns" data-group="dataSource">
-                <button class="comps-optbtn active" data-value="binance">binance</button>
+                <button class="btn btn-secondary active" data-value="binance">binance</button>
               </div>
             </div>
 
             <div class="field">
               <label>Censor returns</label>
               <div class="comps-optBtns" data-group="censor">
-                <button class="comps-optbtn active" data-value="no">no</button>
-                <button class="comps-optbtn" data-value="0.05">5%</button>
-                <button class="comps-optbtn" data-value="0.10">10%</button>
+                <button class="btn btn-secondary active" data-value="no">no</button>
+                <button class="btn btn-secondary" data-value="0.05">5%</button>
+                <button class="btn btn-secondary" data-value="0.10">10%</button>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-
   </div>
 
   <div class="comps-toast" id="toast">
-    <button class="close" id="toastClose" title="Dismiss">x</button>
+    <button class="btn btn-secondary" id="toastClose" title="Dismiss">x</button>
     <div class="tTitle" id="toastTitle"></div>
     <div class="tBody" id="toastBody"></div>
   </div>

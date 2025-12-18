@@ -1,37 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>stalequant.com - Hyperliquid Delisting Recommendations</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../styles.css" />
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </head>
 
 <body>
     <div id="app">
-        <div class="container py-2 px-4">
-            <!-- Header -->
-            <div class="row g-2 mb-2">
-                <div class="col-lg-12">
+        <div class="container py-4 px-4">
+            <div class="row g-4">
+
+                <!-- Header -->
+                <div class="col-12">
                     <div class="card">
                         <div class="card-title">
                             <span>stalequant.com - Hyperliquid Delisting Recommendations</span>
-                            <a href="../index.html">← Home</a>
-                            <span v-if="meta" class="version-badge" style="margin-left: 8px;">
+                            <span v-if="meta" class="version-badge">
                                 v{{ meta.version }} — {{ meta.time }}
                             </span>
+                            <a href="../index.html">← Home</a>
                         </div>
                     </div>
                 </div>
-            </div>
 
-
-            <!-- Chart -->
-            <div class="row g-4 mb-4">
+                <!-- Chart -->
                 <div class="col-12">
                     <div class="card">
                         <div class="card-title">
@@ -42,10 +40,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Data Table -->
-            <div class="row g-4 mb-4">
+                <!-- Data Table -->
                 <div class="col-12">
                     <div class="card">
                         <div class="card-title">
@@ -54,7 +50,7 @@
                         <div class="card-body">
                             <div class="filter-buttons">
                                 <button v-for="option in filterOptions" :key="option.value"
-                                    :class="['filter-btn', { active: selectedFilter === option.value }]"
+                                    :class="['btn', 'btn-secondary', { active: selectedFilter === option.value }]"
                                     @click="selectedFilter = option.value">
                                     {{ option.label }}
                                 </button>
@@ -74,8 +70,7 @@
                                                 {{ col.label }}
                                             </th>
                                             <th class="more-btn">
-                                                <button class="filter-btn" @click="toggleMoreMenu"
-                                                    style="padding: 4px 8px; font-size: 11px;">
+                                                <button class="btn btn-secondary" @click="toggleMoreMenu">
                                                     ⋮
                                                 </button>
                                                 <div class="more-columns-menu" :class="{ show: showMoreMenu }">
@@ -103,45 +98,38 @@
                                 </table>
                             </div>
 
-                            <div class="d-flex flex-wrap gap-2 mt-3 align-items-center">
-                                <div class="me-auto">
+                            <div class="pagination-container">
+                                <div>
                                     <small class="text-muted">
                                         Showing {{ (currentPage - 1) * rowsPerPage + 1 }}-{{ Math.min(currentPage *
                                         rowsPerPage, filteredRows.length) }} of {{ filteredRows.length }} rows
                                     </small>
                                 </div>
-                                <div class="d-flex gap-2">
-                                    <button class="btn"
-                                        style="background: var(--bg-card-passive); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 7px 14px; font-size: 13px; cursor: pointer;"
+                                <div class="flex-row">
+                                    <button class="btn btn-secondary"
                                         @click="currentPage = Math.max(1, currentPage - 1)"
                                         :disabled="currentPage === 1">
                                         Previous
                                     </button>
-                                    <button class="btn"
-                                        style="background: var(--bg-card-passive); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 7px 14px; font-size: 13px; cursor: pointer;"
+                                    <button class="btn btn-secondary"
                                         @click="currentPage = Math.min(Math.ceil(filteredRows.length / rowsPerPage), currentPage + 1)"
                                         :disabled="currentPage >= Math.ceil(filteredRows.length / rowsPerPage)">
                                         Next
                                     </button>
                                 </div>
-                                <button class="btn"
-                                    style="background: var(--bg-card-passive); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 7px 14px; font-size: 13px; cursor: pointer;"
-                                    @click="downloadCSV">
+                                <button class="btn btn-secondary" @click="downloadCSV">
                                     Download CSV
                                 </button>
                                 <a href="https://github.com/stalequant/stalequant.github.io/blob/main/delisting_reco/build_delisting_recos.py"
-                                    target="_blank" class="btn"
-                                    style="background: var(--bg-card-passive); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 7px 14px; font-size: 13px; cursor: pointer; text-decoration: none;">
+                                    target="_blank" class="btn btn-secondary">
                                     Code
                                 </a>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Methodology -->
-            <div class="row g-4">
+                <!-- Methodology -->
                 <div class="col-12">
                     <div class="card">
                         <div class="card-title">

@@ -117,7 +117,7 @@ function handleCoinInput() {
         if (coins.includes(c)) {
             const btn = document.createElement('button');
             btn.textContent = c;
-            btn.className = 'coin-btn';
+            btn.className = 'btn btn-secondary coin-btn';
             btn.dataset.coin = c;
             btnBox.appendChild(btn);
         }

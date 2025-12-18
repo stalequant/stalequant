@@ -11,7 +11,9 @@ function activate(coin) {
     input.value = '';
     input.placeholder = coin;
   }
-  document.querySelectorAll('.coin-btn').forEach(b => b.classList.toggle('active', b.dataset.coin === coin));
+  document.querySelectorAll('.coin-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.coin === coin);
+  });
   location.hash = coin;
   if (metrics) plotCoin(metrics, coin);
 }
@@ -59,7 +61,7 @@ async function init() {
       if (coins.includes(c)) {
         const btn = document.createElement('button');
         btn.textContent = c;
-        btn.className = 'coin-btn';
+        btn.className = 'btn btn-secondary coin-btn';
         btn.dataset.coin = c;
         btnBox.appendChild(btn);
       }

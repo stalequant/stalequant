@@ -69,6 +69,7 @@ body.index-page {
 
 .container {
   flex: 1;
+  max-width:1000px;
 }
 
 /* ============================================
@@ -315,10 +316,11 @@ a.nav-parent:hover {
 
 .comps-picker {
   position: relative;
+  display: inline-block;
 }
 
 .comps-picker input {
-  width: 80%;
+  width: 200px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   background: rgba(0, 0, 0, 0.3);
@@ -376,13 +378,14 @@ a.nav-parent:hover {
 .comps-tokenList {
   margin: 0;
   list-style: none;
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
   gap: 0;
   align-items: center;
   border: none;
   padding: 0;
   background: transparent;
+  vertical-align: middle;
 }
 
 .comps-token {
@@ -457,10 +460,11 @@ a.nav-parent:hover {
   text-transform: uppercase;
   letter-spacing: 0.25px;
   font-weight: 800;
+  margin: 0;
 }
 
 .comps-optBtns {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
   gap: 6px;
 }
@@ -942,6 +946,17 @@ body {
 .ctrlpanel.open {
   display: block;
 }
+
+.ctrlbar .title {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.ctrlbar .summary {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
  
 /* ============================================
    DELISTING RECO PAGE STYLES
@@ -1115,6 +1130,41 @@ body {
   position: relative;
 }
 
+.more-btn .btn {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.btn-secondary {
+  background: var(--bg-card-passive);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+a.btn-secondary {
+  text-decoration: none;
+}
+
+.pagination-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-md);
+}
+
+.pagination-container > div:first-child {
+  flex: 1;
+}
 
 #plotDiv {
   width: 100%;
@@ -1227,7 +1277,7 @@ body {
   background: rgba(0, 0, 0, 0.5);
 }
 
-.stalegun .coin-btn {
+.coin-btn {
   margin-right: 10px;
 }
 

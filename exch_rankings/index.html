@@ -135,7 +135,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 1);
             z-index: 1000;
             display: none;
             justify-content: center;
@@ -171,25 +171,6 @@
             font-weight: var(--font-weight-semibold);
         }
 
-        .close-btn {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background-color var(--transition-base);
-        }
-
-        .close-btn:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
 
         .popover-content {
             flex: 1;
@@ -628,7 +609,7 @@
         <div class="popover">
             <div class="popover-header">
                 <div class="popover-title">Exchange Details</div>
-                <button class="close-btn" id="closeBtn">&times;</button>
+                <button class="btn btn-secondary" id="closeBtn">&times;</button>
             </div>
             <div class="popover-content" id="popoverContent">
                 <!-- Left Pane - Hard Stats -->
@@ -918,7 +899,7 @@ KCEX	Risky CEX	    ☠️			⚠️	☠️	16681	2148				759				#N/A	#N/A	`;
                 <img src="${exchangeImage}" alt="${exchangeName}" class="card-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzMzMzMzMyIvPjwvc3ZnPg=='">
                 <img src="${frameImagePath}" alt="Card Frame" class="card-frame" onerror="this.style.display='none'">
                 <div class="card-content">
-                    <div class="card-title">${exchangeName} ${data.Fun || ''}</div>
+                    <div class="class="card-title py-0 px-4">${exchangeName} ${data.Fun || ''}</div>
                     <div class="card-stats">
                         <div class="card-stat">
                             <span class="card-stat-value">${data.Kind || 'Exchange'}</span>
