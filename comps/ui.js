@@ -119,7 +119,7 @@ function setupPicker(inputEl, dropdownEl, setRefGetter) {
 function setupOptionGroups() {
   document.querySelectorAll(".comps-optBtns[data-group]").forEach((grp) => {
     const name = grp.getAttribute("data-group");
-    const btns = [...grp.querySelectorAll("button.comps-optbtn")];
+    const btns = [...grp.querySelectorAll("button")];
     btns.forEach((btn) => {
       btn.addEventListener("click", () => {
         btns.forEach(b => b.classList.remove("active"));
