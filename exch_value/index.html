@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>stalequant.com - hype/bnb analysis</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Main container -->
+  <div class="container py-4 px-4">
+    <div class="row g-4">
+
+      <!-- Header -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>stalequant.com - hype/bnb analysis</span>
+            <a href="../index.html">← Home</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 1: HYPE vs BNB Price -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>HYPE vs BNB FDV</span>
+          </div>
+          <div class="card-body">
+            <div id="chart1" style="width: 100%; height: 400px;"></div>
+          </div>
+          <div class="ctrlbar">
+            <span class="badge" id="chart1Badge">Not updated</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 2: HL vs Binance BTC Volume -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>HL vs Binance BTC Volume (Weekly Rolling)</span>
+          </div>
+          <div class="card-body">
+            <div id="chart2" style="width: 100%; height: 400px;"></div>
+          </div>
+          <div class="ctrlbar">
+            <span class="badge" id="chart2Badge">Not updated</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 3: Volume Ratio and FDV Ratio -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>Volume Ratio and FDV Ratio</span>
+          </div>
+          <div class="card-body">
+            <div id="chart3" style="width: 100%; height: 400px;"></div>
+          </div>
+          <div class="ctrlbar">
+            <span class="badge" id="chart3Badge">Not updated</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 4: Price/Volume Ratio (Line) -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>$FDV per weekly BTC perp volume</span>
+          </div>
+          <div class="card-body">
+            <div id="chart4" style="width: 100%; height: 400px;"></div>
+          </div>
+          <div class="ctrlbar">
+            <span class="badge" id="chart4Badge">Not updated</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 5: Price/Volume Ratio (Scatter by Day) -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>Ratio of Exchange Relative Values vs 14-day Price Change</span>
+          </div>
+          <div class="card-body">
+            <div id="chart5" style="width: 100%; height: 400px;"></div>
+          </div>
+          <div class="ctrlbar">
+            <span class="badge" id="chart5Badge">Not updated</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 6: 7-day Price Change -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>Exchange Ratio vs 7-day Price Change</span>
+          </div>
+          <div class="card-body">
+            <div id="chart6" style="width: 100%; height: 400px;"></div>
+          </div>
+          <div class="ctrlbar">
+            <span class="badge" id="chart6Badge">Not updated</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="hypebnb.js"></script>
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
