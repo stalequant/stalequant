@@ -43,8 +43,17 @@ const CURVE_KEYS = [
   "Bybit USDT loan"
 ];
 
+const HYPEREVM_KEYS = [
+  "Hypurrfi USDC",
+  "Hyperlend USDC",
+  "Hypurrfi HYPE",
+  "Hyperlend HYPE",
+  "Morpho USDC (KHYPE)",
+  "Morpho HYPE (KHYPE)"
+];
+
 const enabled = {};
-for (const k of [...TS_KEYS, ...CURVE_KEYS]) enabled[k] = true;
+for (const k of [...TS_KEYS, ...CURVE_KEYS, ...HYPEREVM_KEYS]) enabled[k] = true;
 
 const health = {}; // key -> { ok: true/false/null, note }
 
@@ -87,6 +96,7 @@ function buildToggleList(keys, hostId) {
       enabled[k] = inp.checked;
       if (typeof TS !== "undefined" && TS.render) TS.render();
       if (typeof Curve !== "undefined" && Curve.render) Curve.render();
+      if (typeof HyperEVM !== "undefined" && HyperEVM.render) HyperEVM.render();
     });
     const slider = document.createElement("span");
     slider.className = "slider";
@@ -101,5 +111,6 @@ function buildToggleList(keys, hostId) {
 function rebuildToggles() {
   buildToggleList(TS_KEYS, "toggleListTS");
   buildToggleList(CURVE_KEYS, "toggleListCurve");
+  buildToggleList(HYPEREVM_KEYS, "toggleListHyperEVM");
 }
 
