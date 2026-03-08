@@ -13,9 +13,65 @@
     #hidden-without-password {
       display: none;
     }
+
+    /* Blog mode: comic/casual font, cursor, tilt, emojis, etc. (no color overrides) */
+    body.blog-mode,
+    body.blog-mode .container,
+    body.blog-mode .card,
+    body.blog-mode .card-body,
+    body.blog-mode .card-title,
+    body.blog-mode .card-title a,
+    body.blog-mode p,
+    body.blog-mode li,
+    body.blog-mode strong,
+    body.blog-mode b,
+    body.blog-mode td,
+    body.blog-mode table {
+      font-family: "Comic Sans MS", "Comic Sans", "Papyrus", "Chalkboard SE", "Chalkboard", "Marker Felt", cursive !important;
+    }
+
+    body.blog-mode .blog-size-sm {
+      font-size: 0.75em;
+    }
+
+    body.blog-mode .blog-size-lg {
+      font-size: 1.4em;
+    }
+
+    body.blog-mode * {
+      cursor: none !important;
+    }
+
+    #blog-mode-wand {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 32px;
+      height: 32px;
+      font-size: 28px;
+      pointer-events: none;
+      z-index: 999999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.05s ease-out;
+    }
+
+    .blog-mode-trail {
+      position: fixed;
+      pointer-events: none;
+      z-index: 999998;
+      font-size: 20px;
+      opacity: 0.8;
+      animation: blog-trail-fade 1.6s forwards;
+    }
+
+    @keyframes blog-trail-fade {
+      to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.3);
+      }
+    }
   </style>
 </head>
-
 <body>
   <!-- Corner cat -->
   <img src="../img/nft.png" alt="physics purr" class="corner-decoration">
@@ -29,6 +85,7 @@
         <div class="card">
           <div class="card-title">
             <span>stalequant.com - essays</span>
+            <a href="#" id="blog-mode-toggle">Blog mode</a>
             <a href="../index.html">← Home</a>
           </div>
         </div>
@@ -1700,11 +1757,101 @@
     if (window.location.href.endsWith("full")) {
       document.getElementById("hidden-without-password").style.display = "block";
     }
+
+    (function blogMode() {
+      var hasBlogMode = window.location.search.indexOf("blog-mode") !== -1 ||
+        window.location.hash.indexOf("blog-mode") !== -1;
+      if (!hasBlogMode) return;
+
+      document.body.classList.add("blog-mode");
+      
+      var emojis = ["✨", "🪄", "⭐", "🌟", "💫", "🔮", "👻", "🎃", "🦄", "🌈", "💚", "🧙", "🪅", "🎉", "💥", "🔥", "🌸", "🦋", "💰", "💵", "💸", "📈", "📉", "💳", "💎", "🏦", "📊", "💹", "🚀", "🌙", "🎯", "⚖️", "💼", "🧾", "🪙"];
+      var trailEmojis = ["✨", "🪄", "⭐", "🌟", "💫", "💰", "📈", "📉", "💵", "🚀"];
+
+      function randomChoice(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
+
+      function injectRandomEmojis() {
+        var paragraphs = document.querySelectorAll(".card-body p, .card-body li, .card-title");
+        paragraphs.forEach(function (el) {
+          if (Math.random() > 0.6) return;
+          var text = el.innerHTML;
+          var words = text.split(/(\s+)/);
+          var insertEvery = 4 + Math.floor(Math.random() * 6);
+          var count = 0;
+          var out = words.map(function (w) {
+            if (w.trim().length === 0) return w;
+            count++;
+            var word = (Math.random() < 0.2 ? w.toUpperCase() : w);
+            if (Math.random() < 0.1) word = "<span class=\"blog-size-sm\">" + word + "</span>";
+            else if (Math.random() < 0.1) word = "<span class=\"blog-size-lg\">" + word + "</span>";
+            if (count % insertEvery === 0) return word + " " + randomChoice(emojis) + " ";
+            return word;
+          }).join("");
+          el.innerHTML = out;
+        });
+      }
+
+      function uglyFormatting() { }
+
+      injectRandomEmojis();
+      uglyFormatting();
+
+      var wand = document.createElement("div");
+      wand.id = "blog-mode-wand";
+      wand.textContent = "🪄";
+      document.body.appendChild(wand);
+
+      var trailPool = [];
+      var poolSize = 48;
+      for (var i = 0; i < poolSize; i++) {
+        var t = document.createElement("div");
+        t.className = "blog-mode-trail";
+        t.textContent = randomChoice(trailEmojis);
+        t.style.left = "-999px";
+        t.style.top = "-999px";
+        document.body.appendChild(t);
+        trailPool.push({ el: t, ts: 0 });
+      }
+      var trailIndex = 0;
+      var lastTrail = 0;
+
+      var blogCards = document.querySelectorAll(".blog-mode .card");
+      var tiltFactor = 0.001;
+
+      document.addEventListener("mousemove", function (e) {
+        var mx = e.clientX;
+        var my = e.clientY;
+        wand.style.left = mx + "px";
+        wand.style.top = my + "px";
+        blogCards.forEach(function (card) {
+          var r = card.getBoundingClientRect();
+          var cx = r.left + r.width / 2;
+          var cy = r.top + r.height / 2;
+          var dx = mx - cx;
+          var dy = my - cy;
+          var angleDeg = Math.atan2(dy, dx) * (180 / Math.PI) * tiltFactor;
+          card.style.transform = "rotate(" + angleDeg + "deg)";
+        });
+        var now = Date.now();
+        if (now - lastTrail > 25) {
+          lastTrail = now;
+          var slot = trailPool[trailIndex % poolSize];
+          trailIndex++;
+          slot.el.style.left = mx + "px";
+          slot.el.style.top = my + "px";
+          slot.el.style.transform = "translate(-50%, -50%) scale(1)";
+          slot.el.textContent = randomChoice(trailEmojis);
+          slot.el.style.animation = "none";
+          slot.el.offsetHeight;
+          slot.el.style.animation = "blog-trail-fade 1.6s forwards";
+        }
+      });
+    })();
   </script>
 
 </body>
 
 
-</html>
-
-
+</html>  
