@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>stalequant.com – Oil futures (Hyperliquid)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="../styles.css" />
     <style>
       [data-bs-theme="dark"] body.stalegun,
       body.stalegun.dark { background: #1a1d21; color: #e4e6eb; }
@@ -30,8 +29,9 @@
       [data-bs-theme="dark"] a:hover,
       body.stalegun.dark a:hover { color: #bfdbfe; }
       .oil-chart-card,
-      .oil-chart-card .card-body { overflow: visible; }
-      #oil-chart-container { min-height: 520px; box-sizing: border-box; }
+      .oil-chart-card .card-body { overflow: visible !important; }
+      #oil-chart-container { min-height: 520px; box-sizing: border-box; overflow: visible; }
+      #oil-chart-container canvas { aspect-ratio: unset; width: 100% !important; height: 100% !important; display: block; }
       #oil-legend { min-height: 28px; color: rgba(255,255,255,0.9); }
       #oil-legend .legend-item { color: inherit; }
       .oil-time-axis {
@@ -41,6 +41,7 @@
         color: rgba(255,255,255,0.7);
         border-top: 1px solid rgba(255,255,255,0.2);
         box-sizing: border-box;
+        overflow: visible;
       }
     </style>
     <script src="https://unpkg.com/lightweight-charts@5.1.0/dist/lightweight-charts.standalone.production.js"></script>
