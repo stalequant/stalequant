@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>stalequant.com – Oil futures (Hyperliquid)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      [data-bs-theme="dark"] body.stalegun,
+      body.stalegun.dark { background: #1a1d21; color: #e4e6eb; }
+      [data-bs-theme="dark"] .card,
+      body.stalegun.dark .card { background: #24262b; border-color: #3e4248; color: #e4e6eb; }
+      [data-bs-theme="dark"] .card-title,
+      body.stalegun.dark .card-title { color: #e4e6eb; }
+      [data-bs-theme="dark"] .text-muted,
+      body.stalegun.dark .text-muted { color: #9ca3af !important; }
+      [data-bs-theme="dark"] .btn-outline-secondary,
+      body.stalegun.dark .btn-outline-secondary { color: #9ca3af; border-color: #4b5563; }
+      [data-bs-theme="dark"] .btn-outline-secondary:hover,
+      body.stalegun.dark .btn-outline-secondary:hover { background: #374151; border-color: #6b7280; color: #e4e6eb; }
+      [data-bs-theme="dark"] .btn-primary,
+      body.stalegun.dark .btn-primary { background: #3b82f6; border-color: #3b82f6; }
+      [data-bs-theme="dark"] .btn-primary:hover,
+      body.stalegun.dark .btn-primary:hover { background: #2563eb; border-color: #2563eb; }
+      [data-bs-theme="dark"] .status-pill,
+      body.stalegun.dark .status-pill { color: #9ca3af; }
+      [data-bs-theme="dark"] a,
+      body.stalegun.dark a { color: #93c5fd; }
+      [data-bs-theme="dark"] a:hover,
+      body.stalegun.dark a:hover { color: #bfdbfe; }
+      .oil-chart-card,
+      .oil-chart-card .card-body { overflow: visible; }
+      #oil-chart-container { min-height: 520px; box-sizing: border-box; }
+      #oil-legend { min-height: 28px; color: rgba(255,255,255,0.9); }
+      #oil-legend .legend-item { color: inherit; }
+      .oil-time-axis {
+        min-height: 36px;
+        padding: 6px 0 0;
+        font-size: 12px;
+        color: rgba(255,255,255,0.7);
+        border-top: 1px solid rgba(255,255,255,0.2);
+        box-sizing: border-box;
+      }
+    </style>
+    <script src="https://unpkg.com/lightweight-charts@5.1.0/dist/lightweight-charts.standalone.production.js"></script>
+    <script>
+      window.OIL_CANDLE_INTERVAL = "5m";
+      window.OIL_CANDLE_LIMIT = 400;
+    </script>
+</head>
+
+<body class="stalegun dark">
+
+    <div class="container py-4 px-4">
+        <div class="row g-4">
+
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Oil futures – Hyperliquid</span>
+                        <a href="../index.html">← Home</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card oil-chart-card">
+                    <div class="card-title">Oil charts</div>
+                    <div class="card-body">
+                        <div id="oil-legend" class="mb-2"></div>
+                        <div class="mb-2">
+                            <span class="me-2">Interval:</span>
+                            <div id="oilIntervalButtons" class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-secondary oil-interval-btn" data-interval="1m">1m</button>
+                                <button type="button" class="btn btn-primary oil-interval-btn" data-interval="5m">5m</button>
+                                <button type="button" class="btn btn-outline-secondary oil-interval-btn" data-interval="15m">15m</button>
+                                <button type="button" class="btn btn-outline-secondary oil-interval-btn" data-interval="1h">1h</button>
+                            </div>
+                        </div>
+                        <div id="oil-chart-container" style="height: 520px; overflow: visible;"></div>
+                        <div id="oil-time-axis" class="oil-time-axis"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-title">Status</div>
+                    <div class="card-body">
+                        <span class="status-pill" id="statusHL">Hyperliquid: <span class="status-warn">connecting</span></span>
+                        <span class="status-pill" id="statusLighter">Lighter: <span class="status-warn">connecting</span></span>
+                        <span class="status-pill" id="statusAster">Aster: <span class="status-warn">connecting</span></span>
+                        <span class="status-pill">Last update: <span id="lastTick" class="status-warn">--</span></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="oil_hl_data.js"></script>
+    <script src="oil_lighter_data.js"></script>
+    <script src="oil_aster_data.js"></script>
+    <script src="stacked-bars-series.js"></script>
+    <script src="oil_chart.js"></script>
+    <script src="oil_ui.js"></script>
+</body>
+
+</html>
