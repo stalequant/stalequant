@@ -1297,3 +1297,21 @@ a.btn-secondary {
 .tape-box .stalegun {
   color: #A444BE;
 }
+
+/* ============================================
+   OIL CHART PAGE: avoid clipping / forced size
+   ============================================ */
+#oil-chart-container,
+#oil-chart-container *,
+#oil-time-axis {
+  overflow: visible !important;
+}
+#oil-chart-container canvas {
+  aspect-ratio: unset !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+.oil-chart-card,
+.oil-chart-card .card-body {
+  overflow: visible !important;
+}
