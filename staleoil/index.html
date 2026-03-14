@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -7,40 +7,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="../styles.css" />
     <style>
-      [data-bs-theme="dark"] body.stalegun,
-      body.stalegun.dark { background: #1a1d21; color: #e4e6eb; }
-      [data-bs-theme="dark"] .card,
-      body.stalegun.dark .card { background: #24262b; border-color: #3e4248; color: #e4e6eb; }
-      [data-bs-theme="dark"] .card-title,
-      body.stalegun.dark .card-title { color: #e4e6eb; }
-      [data-bs-theme="dark"] .text-muted,
-      body.stalegun.dark .text-muted { color: #9ca3af !important; }
-      [data-bs-theme="dark"] .btn-outline-secondary,
-      body.stalegun.dark .btn-outline-secondary { color: #9ca3af; border-color: #4b5563; }
-      [data-bs-theme="dark"] .btn-outline-secondary:hover,
-      body.stalegun.dark .btn-outline-secondary:hover { background: #374151; border-color: #6b7280; color: #e4e6eb; }
-      [data-bs-theme="dark"] .btn-primary,
-      body.stalegun.dark .btn-primary { background: #3b82f6; border-color: #3b82f6; }
-      [data-bs-theme="dark"] .btn-primary:hover,
-      body.stalegun.dark .btn-primary:hover { background: #2563eb; border-color: #2563eb; }
-      [data-bs-theme="dark"] .status-pill,
-      body.stalegun.dark .status-pill { color: #9ca3af; }
-      [data-bs-theme="dark"] a,
-      body.stalegun.dark a { color: #93c5fd; }
-      [data-bs-theme="dark"] a:hover,
-      body.stalegun.dark a:hover { color: #bfdbfe; }
       .oil-chart-card,
       .oil-chart-card .card-body { overflow: visible !important; }
       #oil-chart-container { min-height: 520px; box-sizing: border-box; overflow: visible; }
       #oil-chart-container canvas { aspect-ratio: unset; width: 100% !important; height: 100% !important; display: block; }
-      #oil-legend { min-height: 28px; color: rgba(255,255,255,0.9); }
+      #oil-legend { min-height: 28px; color: var(--text-primary); }
       #oil-legend .legend-item { color: inherit; }
       .oil-time-axis {
         min-height: 36px;
         padding: 6px 0 0;
         font-size: 12px;
-        color: rgba(255,255,255,0.7);
-        border-top: 1px solid rgba(255,255,255,0.2);
+        color: var(--text-secondary);
+        border-top: 1px solid var(--border-subtle);
         box-sizing: border-box;
         overflow: visible;
       }
@@ -52,7 +30,7 @@
     </script>
 </head>
 
-<body class="stalegun dark">
+<body class="stalegun">
 
     <div class="container py-4 px-4">
         <div class="row g-4">
