@@ -292,24 +292,26 @@ def download_one_exch(exch: ExchangeName, spot_fut: SpotFut) -> None:
 
     exchange_data: dict[Symbol, list[list[float]]] = {}
     for market in api.markets:
-        try:
-            # Spot: no settle suffix; futures: linear USD collateral; USD quote; no dated "-".
-            if spot_fut == "spot" and ":" in market:
-                continue
-            if spot_fut == "futures" and ":USD" not in market:
-                continue
-            if "/USD" not in market:
-                continue
-            if "-" in market:
-                continue
-
-            print_message(f"Downloading {exch} {market}...", level=3)
-            exchange_data[market] = api.fetch_ohlcv(market, MSR_INTERVAL, limit=1000)
-            time.sleep(2)
-
-        except Exception as e:
-            print_message(f"Error downloading {exch} {market}: {e}", level=3)
-            time.sleep(5)
+        for tries in range(5):
+            try:
+                # Spot: no settle suffix; futures: linear USD collateral; USD quote; no dated "-".
+                if spot_fut == "spot" and ":" in market:
+                    continue
+                if spot_fut == "futures" and ":USD" not in market:
+                    continue
+                if "/USD" not in market:
+                    continue
+                if "-" in market:
+                    continue
+    
+                print_message(f"Downloading {exch} {market}...", level=3)
+                exchange_data[market] = api.fetch_ohlcv(market, MSR_INTERVAL, limit=1000)
+                time.sleep(2)
+                break
+    
+            except Exception as e:
+                print_message(f"Error downloading {exch} {market}: {e}", level=3)
+                time.sleep(5)
 
     with open(fn, "w") as f:
         json.dump(exchange_data, f)
