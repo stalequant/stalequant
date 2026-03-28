@@ -1,20 +1,36 @@
-# stalequant 2025-04-02
+"""Build Hyperliquid delisting / listing recommendation scores and chart.
 
+Pipeline:
+1) Download reference data:
+  - exchange OHLCV (CCXT)
+  - HL meta (REST)
+  - HL data via Thunderhead metrics (CloudFront JSON)
+  - CMC market caps (uses keyring API key)
+2) Merge by coin
+3) Score codesbased on coded scores
+4) Emit JSON with table data and Plotly figure.
+
+Script runs top-to-bottom (notebook-style %% sections).
+
+Author: stalequant 2025-04-02, updated 2026-03-27.
+"""
+
+import datetime
+from functools import lru_cache
 import json
 import math
+import requests
 from typing import Any, cast
 import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal, TypedDict
 
 import ccxt
+from ccxt.base.exchange import Exchange
 import numpy as np
 import pandas as pd
-import requests
-from ccxt.base.exchange import Exchange
-
-import datetime
-
+import plotly.express as px
+import plotly.graph_objects as go
 
 ### Types
 
@@ -34,6 +50,8 @@ class CutoffSpec(TypedDict):
 
 ### Constants
 
+OUTPUT_JSON_FN = "hl_delisting_data.json"
+
 STABLE_COINS: set[Coin] = {"USDC", "USDT", "USDH", "USDE", "USD"}
 
 REFERENCE_EXCH: dict[ExchangeName, list[SpotFut]] = {
@@ -41,7 +59,8 @@ REFERENCE_EXCH: dict[ExchangeName, list[SpotFut]] = {
     "bybit": ["spot", "futures"],
     "okx": ["spot", "futures"],
     "gate": ["spot", "futures"],
-    "kucoin": ["spot", "futures"],
+    "kucoin": ["spot"],
+    "kucoinfutures": ["futures"],
     "mexc": ["spot", "futures"],
     "bitmex": ["futures"],
     "htx": ["futures"],
@@ -92,11 +111,7 @@ EXCH_TOKEN_ALIASES: dict[tuple[Coin, ExchangeName], Coin] = {
 }
 
 
-OUTPUT_CORR_MAT_JSON: str = "hl_screen_corr.json"
-OUTPUT_RAW_DATA_JSON: str = "hl_screen_main.json"
-OUTPUT_META_JSON: str = "hl_meta.json"
-
-
+# Category -> metric column -> piecewise cutoff spec (exp=log-spaced thresholds, etc.).
 SCORE_CUTOFFS: dict[str, dict[CatLabel, CutoffSpec]] = {
     "Market Cap Score": {
         "MC $m": {"kind": "exp", "start": 1, "end": 5000, "steps": 15},
@@ -202,26 +217,39 @@ HL_STRICT: set[Coin] = {
     "POINTS",
     "RAGE",
 }
+
 HL_STRICT_BOOST: float = 5
 DAYS_TO_CONSIDER: float = 30
 
-earliest_ts_to_keep: float = (
-    time.time() - (DAYS_TO_CONSIDER + 5) * 24 * 60 * 60
-)
-
+# Recommendation bands vs max leverage tier (keys = HL max lev buckets used in UI).
+# Score below LB -> "high risk" path; at/above UB -> "low risk" path (see generate_recommendation).
 SCORE_UB: dict[int, float] = {0: 62, 3: 75, 5: 85, 10: 101}
 SCORE_LB: dict[int, float] = {0: 0, 3: 37, 5: 48, 10: 60}
 
 MSR_INTERVAL: Literal["1d"] = "1d"
 
 
+def print_message(message: str, level: int = 0) -> None:
+    print("  " * level + message)
+
+
+# %% DOWNLOAD REFERENCE EXCHANGE DATA
+
+print_message("Reference exchange data")
+
+# Candle window: pull last DAYS_TO_CONSIDER daily bars, plus 5d buffer for index slicing.
+earliest_ts_to_keep: float = time.time() - (DAYS_TO_CONSIDER + 5) * 24 * 60 * 60
+
+
 def sig_figs(number: float, sig_figs: int = 3):
+    """Round positive values to a fixed number of significant digits (else 0)."""
     if np.isnan(number) or number <= 0:
         return 0
     return round(number, int(sig_figs - 1 - math.log10(number)))
 
 
 def clean_symbol(symbol: Symbol, exch: ExchangeName | Literal[""] = ""):
+    """Strip pair suffixes, apply per-exchange then global token aliases."""
     redone = symbol.split("/")[0]
     for suffix in ["10000000", "1000000", "1000", "k"]:
         redone = redone.replace(suffix, "")
@@ -229,31 +257,26 @@ def clean_symbol(symbol: Symbol, exch: ExchangeName | Literal[""] = ""):
     return TOKEN_ALIASES.get(redone, redone)
 
 
+@lru_cache(maxsize=100)
 def get_hot_ccxt_api(exch: ExchangeName) -> Exchange:
     api = getattr(ccxt, exch)()
     api.load_markets()
     return api
 
 
+def get_candles_fn(exch: ExchangeName, spot_fut: SpotFut) -> str:
+    return f"exch_candles_{exch}_{spot_fut}_{MSR_INTERVAL}.json"
+
+
+# Loaded once for potential market lookups (contract size, etc.); keep in sync with HL REST.
 hl_markets: dict[Symbol, dict[str, Any]] = cast(
     dict[Symbol, dict[str, Any]], get_hot_ccxt_api("hyperliquid").markets
 )
 
 
-def print_message(message: str, level: int = 0) -> None:
-    print("  " * level + message)
-
-
-# %% REFERENCE EXCHANGE DATA
-print_message("Building reference exchange data")
-
-
-def get_fn(exch: ExchangeName, spot_fut: SpotFut) -> str:
-    return f"exch_candles_{exch}_{spot_fut}_{MSR_INTERVAL}.json"
-
-
 def download_one_exch(exch: ExchangeName, spot_fut: SpotFut) -> None:
-    fn = get_fn(exch, spot_fut)
+    """Fetch 1d OHLCV per market; skip if JSON cache already exists."""
+    fn = get_candles_fn(exch, spot_fut)
     try:
         with open(fn) as f:
             pass
@@ -270,6 +293,7 @@ def download_one_exch(exch: ExchangeName, spot_fut: SpotFut) -> None:
     exchange_data: dict[Symbol, list[list[float]]] = {}
     for market in api.markets:
         try:
+            # Spot: no settle suffix; futures: linear USD collateral; USD quote; no dated "-".
             if spot_fut == "spot" and ":" in market:
                 continue
             if spot_fut == "futures" and ":USD" not in market:
@@ -280,9 +304,7 @@ def download_one_exch(exch: ExchangeName, spot_fut: SpotFut) -> None:
                 continue
 
             print_message(f"Downloading {exch} {market}...", level=3)
-            exchange_data[market] = api.fetch_ohlcv(
-                market, MSR_INTERVAL, limit=1000
-            )
+            exchange_data[market] = api.fetch_ohlcv(market, MSR_INTERVAL, limit=1000)
             time.sleep(2)
 
         except Exception as e:
@@ -291,39 +313,45 @@ def download_one_exch(exch: ExchangeName, spot_fut: SpotFut) -> None:
 
     with open(fn, "w") as f:
         json.dump(exchange_data, f)
+
     print_message(f"Completed download of {exch} {spot_fut}", level=2)
 
 
 def dl_reference_exch_data() -> None:
+    # High worker count: mostly I/O bound; may hit exchange rate limits.
     with ThreadPoolExecutor(max_workers=100) as ex:
         for exch, exch_spec in REFERENCE_EXCH.items():
             for spot_fut in exch_spec:
                 _ = ex.submit(download_one_exch, exch, spot_fut)
 
 
-print_message(
-    "Downloading reference exchange data concurrently using CCXT", level=1
-)
+print_message("Downloading reference exchange data concurrently using CCXT", level=1)
+
 dl_reference_exch_data()
 
 
+# %% PROCESS REFERENCE EXCHANGE DATA
+
+
 def geomean_three(series: pd.Series) -> float:
+    """Geometric mean of the three largest volume observations (per agg group)."""
     return np.exp(np.log(series + 1).sort_values()[-3:].sum() / 3) - 1
 
 
 def process_reference_exch_data() -> pd.DataFrame:
-    all_candle_data: dict[
-        tuple[ExchangeName, SpotFut, Coin], dict[str, float]
-    ] = {}
+    all_candle_data: dict[tuple[ExchangeName, SpotFut, Coin], dict[str, float]] = {}
 
     for exch, exch_spec in REFERENCE_EXCH.items():
+        if exch =='bitmex': 
+            continue 
+        
         print_message(f"Processing {exch}", level=2)
         api = get_hot_ccxt_api(exch)
         if api.markets is None:
             raise RuntimeError(f"No markets found for exchange {exch}")
 
         for spot_fut in exch_spec:
-            with open(get_fn(exch, spot_fut)) as f:
+            with open(get_candles_fn(exch, spot_fut)) as f:
                 exch_data = json.load(f)
 
             for symbol, market in exch_data.items():
@@ -343,17 +371,15 @@ def process_reference_exch_data() -> pd.DataFrame:
                     api.markets.get(symbol, {}).get("contractSize", None) or 1,
                     1,
                 )
+                # Rough USD volume proxy: min(low, last close) * volume, mean over window, $m.
                 my_val = (
-                    (
-                        np.minimum(market_df.l, market_df.c.iloc[-1])
-                        * market_df.v
-                    ).mean()
+                    (np.minimum(market_df.l, market_df.c.iloc[-1]) * market_df.v).mean()
                     * contractsize
                     / 1e6
                 )
-                if my_val >= all_candle_data.get(
-                    (exch, spot_fut, coin), {}
-                ).get("volume", 0):
+                if my_val >= all_candle_data.get((exch, spot_fut, coin), {}).get(
+                    "volume", 0
+                ):
                     all_candle_data[exch, spot_fut, coin] = {
                         "volume": my_val,
                         "std": (market_df.c / market_df.c.shift() - 1)
@@ -370,9 +396,7 @@ def process_reference_exch_data() -> pd.DataFrame:
                 level=3,
             )
 
-    df_coins = pd.DataFrame(all_candle_data).T.sort_values(
-        by="volume", ascending=False
-    )
+    df_coins = pd.DataFrame(all_candle_data).T.sort_values(by="volume", ascending=False)
     df_coins.index.names = ["exch", "spot_fut", "coin"]
     output_df: pd.DataFrame = cast(
         pd.DataFrame,
@@ -399,9 +423,7 @@ def process_reference_exch_data() -> pd.DataFrame:
             "std": "Volatility",
         }[item]
         + " "
-        + {"geomean_three": "Geomean-3 $m", "sum": "$m", "median": "(std)"}[
-            msr
-        ]
+        + {"geomean_three": "Geomean-3 $m", "sum": "$m", "median": "(std)"}[msr]
         for item, msr, spot_fut in output_df.columns
     ]
 
@@ -409,14 +431,17 @@ def process_reference_exch_data() -> pd.DataFrame:
 
 
 print_message("Processing reference exchange data", level=1)
+
 proc_ref_data = process_reference_exch_data()
 
 
-# %%
-print_message("Building Hyperliquid API sourced data")
+# %% BUILD HYPERLIQUID API SOURCED DATA
+
+print_message("Hyperliquid API data")
 
 
 def dl_hl_data():
+    """HL public info: universe + per-asset context (metaAndAssetCtxs)."""
     response = requests.post(
         "https://api.hyperliquid.xyz/info",
         headers={"Content-Type": "application/json"},
@@ -426,7 +451,7 @@ def dl_hl_data():
     return response.json()
 
 
-print_message("Downloading Hyperliquid API sourced data", level=1)
+print_message("Downloading Hyperliquid API data", level=1)
 raw_hl_data: list[dict[str, Any]] = dl_hl_data()
 
 
@@ -434,7 +459,8 @@ def process_hl_data(raw_hl_data: list[dict[str, Any]]) -> pd.DataFrame:
     universe, asset_ctxs = raw_hl_data[0]["universe"], raw_hl_data[1]
     merged_data = [u | a for u, a in zip(universe, asset_ctxs)]
     output_df = pd.DataFrame(merged_data)
-    output_df = output_df[True != output_df.isDelisted]
+    output_df = output_df[output_df.isDelisted!=True]
+    # Perps use "k" prefix on some names; strip for alignment with other feeds.
     output_df.index = [
         name[1:] if name.startswith("k") else name for name in output_df.name
     ]
@@ -442,12 +468,13 @@ def process_hl_data(raw_hl_data: list[dict[str, Any]]) -> pd.DataFrame:
     return output_df
 
 
-print_message("Processing Hyperliquid API sourced data", level=1)
+print_message("Processing Hyperliquid API data", level=1)
 proc_hl_data: pd.DataFrame = process_hl_data(raw_hl_data)
 
 
-# %%
-print_message("Building Thunderhead API sourced data")
+# %% BUILD THUNDERHEAD API SOURCED DATA
+
+print_message("Thunderhead data")
 
 
 def dl_thunderhead_data() -> dict[str, list[dict[str, Any]]]:
@@ -474,13 +501,14 @@ def dl_thunderhead_data() -> dict[str, list[dict[str, Any]]]:
     return raw_thunder_data
 
 
-print_message("Downloading Thunderhead API sourced data", level=1)
+print_message("Downloading Thunderhead data", level=1)
 raw_thunder_data: dict[str, list[dict[str, Any]]] = dl_thunderhead_data()
 
 
 def process_thunderhead_data(
-    raw_thunder_data: dict[str, list[dict[str, Any]]]
+    raw_thunder_data: dict[str, list[dict[str, Any]]],
 ) -> pd.DataFrame:
+    """Pivot Thunderhead time series; last 30 rows averaged -> per-coin snapshot."""
     dfs: list[pd.DataFrame] = []
 
     for key, records in raw_thunder_data.items():
@@ -503,10 +531,9 @@ def process_thunderhead_data(
 
     coin_time_df = coin_time_df.unstack(0)
 
+    # Drop delivery / dated symbols (contain "@"); then reduce to per-coin futures row.
     fut_data_df = (
-        coin_time_df.loc[~coin_time_df.index.str.contains("@")]
-        .unstack()
-        .unstack(0)
+        coin_time_df.loc[~coin_time_df.index.str.contains("@")].unstack().unstack(0)
     )
     fut_data_df["avg_notional_oi"] = (
         fut_data_df["avg_oracle_px"] * fut_data_df["avg_open_interest"]
@@ -522,40 +549,33 @@ def process_thunderhead_data(
         / output_df["total_volume"]
         * 100
     )
-    output_df.loc[output_df["HLP Vol Share %"] <= 0.001, "HLP Vol Share %"] = (
-        0.0001
-    )
+    output_df.loc[output_df["HLP Vol Share %"] <= 0.001, "HLP Vol Share %"] = 0.0001
     output_df["HLP OI Share %"] = (
         output_df["daily_ntl_abs"] / output_df["avg_notional_oi"] * 100
     )
-    output_df.loc[output_df["HLP OI Share %"] <= 0.001, "HLP OI Share %"] = (
-        0.0001
-    )
+    output_df.loc[output_df["HLP OI Share %"] <= 0.001, "HLP OI Share %"] = 0.0001
 
     output_df["OI on HL $m"] = output_df["avg_notional_oi"] / 1e6
     output_df["Volume on HL $m"] = output_df["total_volume"] / 1e6
+    # Slippage fractions -> "percent" style scale (100_00 = basis points if input is decimal).
     output_df["HL Slip. $3k"] = output_df["median_slippage_3000"] * 100_00
     output_df["HL Slip. $30k"] = output_df["median_slippage_30000"] * 100_00
 
     return output_df.dropna(subset="time")
 
 
-print_message("Processing Thunderhead API sourced data", level=1)
-proc_thunderhead_data: pd.DataFrame = process_thunderhead_data(
-    raw_thunder_data
-)
+print_message("Processing Thunderhead data", level=1)
+proc_thunderhead_data: pd.DataFrame = process_thunderhead_data(raw_thunder_data)
 
 
 # %%
-print_message("Building CoinMarketCap API sourced data")
+print_message("CoinMarketCap data")
 
 
 def dl_cmc_data() -> list[dict[str, Any]]:
     import keyring  # for cmc api key
 
-    CMC_API_URL = (
-        "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
-    )
+    CMC_API_URL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
     CMC_API_KEY = keyring.get_password("cmc", "cmc")
 
     response = requests.get(
@@ -570,7 +590,7 @@ def dl_cmc_data() -> list[dict[str, Any]]:
     return data
 
 
-print_message("Downloading CoinMarketCap API sourced data", level=1)
+print_message("Downloading CoinMarketCap data", level=1)
 raw_cmc_data: list[dict[str, Any]] = dl_cmc_data()
 
 
@@ -581,9 +601,7 @@ def process_cmc_data(cmc_data: list[dict[str, Any]]) -> pd.DataFrame:
                 {
                     "symbol": clean_symbol(a["symbol"]),
                     "mc": float(a["quote"]["USD"]["market_cap"]),
-                    "fd_mc": float(
-                        a["quote"]["USD"]["fully_diluted_market_cap"]
-                    ),
+                    "fd_mc": float(a["quote"]["USD"]["fully_diluted_market_cap"]),
                 }
                 for a in cmc_data
             ]
@@ -603,12 +621,15 @@ def process_cmc_data(cmc_data: list[dict[str, Any]]) -> pd.DataFrame:
     return output_df
 
 
-print_message("Processing CoinMarketCap API sourced data", level=1)
+print_message("Processing CoinMarketCap data", level=1)
 proc_cmc_data: pd.DataFrame = process_cmc_data(raw_cmc_data)
 
 
-# %%
+# %% Scoring and recommendations
+
+
 def build_scores(df: pd.DataFrame) -> pd.DataFrame:
+    """Sum partial scores from SCORE_CUTOFFS; zero HL-only columns if not listed on HL."""
     output: dict[str, pd.Series] = {}
     for score_category, category_details in SCORE_CUTOFFS.items():
         output[score_category] = pd.Series(0, index=df.index)
@@ -651,6 +672,7 @@ def build_scores(df: pd.DataFrame) -> pd.DataFrame:
             output[score_category] += output[score_name]
 
     output_df = pd.concat(output, axis=1)
+    # Coins with no HL listing: do not use HL Activity / Liquidity subscores.
     output_df.loc[
         df["Max Lev. on HL"] < 1, [c for c in output_df if "HL" in str(c)]
     ] = 0
@@ -689,13 +711,10 @@ df = pd.concat([df, build_scores(df)], axis=1)
 
 
 def generate_recommendation(row: pd.Series) -> str:
-    high_lev = (
-        row["Score"] < SCORE_LB[min(max(SCORE_LB), int(row["Max Lev. on HL"]))]
-    )
-    low_lev = (
-        row["Score"]
-        >= SCORE_UB[min(max(SCORE_UB), int(row["Max Lev. on HL"]))]
-    )
+    """Map score vs SCORE_LB/SCORE_UB bands (by leverage tier) to action labels."""
+    # Tier key = min(max_leverage_tier, int(max_lev)); dict keys must cover that int or KeyError.
+    high_lev = row["Score"] < SCORE_LB[min(max(SCORE_LB), int(row["Max Lev. on HL"]))]
+    low_lev = row["Score"] >= SCORE_UB[min(max(SCORE_UB), int(row["Max Lev. on HL"]))]
 
     if row["Max Lev. on HL"] > 3 and high_lev:
         return "Dec. Lev."
@@ -721,11 +740,8 @@ for c in df_for_main_data.columns:
         df_for_main_data[c] = df_for_main_data[c].map(sig_figs)
 
 
-# %%
+# %% Plot: scatter (score vs leverage bucket) plus LB/UB band bars; write JSON for app.
 
-
-import plotly.express as px
-import pandas as pd
 
 lev_map = {
     0: "Not listed",
@@ -766,8 +782,7 @@ for _, group in df2.groupby(["x_index"], sort=False):
 
 df2 = df2.loc[df2.Score.gt(55) | df2.x_index.gt(0)]
 df2["x_offset"] = (
-    df2["x_index"]
-    + (0.5 + df2.offset_o % 5 - np.minimum(df2.max_offset_o, 5) / 2) / 6
+    df2["x_index"] + (0.5 + df2.offset_o % 5 - np.minimum(df2.max_offset_o, 5) / 2) / 6
 )
 df2["y_offset"] = df2["Score"] + df2.offset_o // 5 / 2
 
@@ -780,7 +795,7 @@ fig = px.scatter(
     labels={"x_index": "Leverage Index", "y_offset": "Score"},
     title="Score vs. Max Leverage Index on HL",
     hover_name=df2.index,
-    template="plotly_dark",  # <--- dark mode template
+    template="plotly_dark",
 )
 
 
@@ -813,11 +828,10 @@ fig.update_layout(
         title="Max Leverage on Hyperliquid",
     )
 )
-import plotly.graph_objects as go
 
 lev_to_idx = {lev: i for i, lev in enumerate(lev_map)}
 
-bars = []
+bars: list[go.Bar] = []
 for lev, x_min in SCORE_UB.items():
     if lev not in lev_map:
         continue
@@ -844,13 +858,13 @@ for lev, x_min in SCORE_LB.items():
             y=[x_min],  # bar height
             base=[0],  # start at x_min, extend to 100
             width=0.8,
-            marker=dict(color="rgba(200,0,0,0.25)"),  # transparent green
+            marker=dict(color="rgba(200,0,0,0.25)"),  # transparent red
             showlegend=False,
             hoverinfo="skip",
         )
     )
 
-# 1) Add bar traces (currently they’ll be on TOP)
+# 1) Add bar traces (drawn first here, then reordered behind the scatter).
 for bar in bars:
     fig.add_trace(bar)
 
@@ -871,7 +885,7 @@ fig.update_layout(
 )
 fig.show(renderer="browser")
 fig_json = fig.to_json()
-with open("hl_delisting_data.json", "w") as f:
+with open(OUTPUT_JSON_FN, "w") as f:
     json.dump(
         {
             "data": df_for_main_data.to_dict(orient="records"),
