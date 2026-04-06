@@ -160,7 +160,9 @@
 
 						<p><strong id="harden-environment">Harden environment</strong>  </p>
 						<ul>
-			<li> For OS hardening, keep in mind that most <b>real-world losses come from phishing, signing malicious transactions, account takeover, and running bad stuff</b>; not kernel exploits. For Windows, in categories of increasing pain:  
+			<li> 
+The <b>first three categories are more important</b> than this one. For most people, high-friction OS hardening is not necessary. If you are running a dedicated signing machine without doing the basics in the first three categories, you are focusing on the wrong things. Using a password manager makes your life easier and provides major protection. Disabling automatic device installation makes your life harder and mainly protects against <a href="https://www.darkreading.com/cyberattacks-data-breaches/sogu-snowydrive-malware-usb-based-cyberattacks-surge">niche</a>, <a href="https://www.youtube.com/watch?v=3Nq3ye-QCyM">targeted</a> <a href="https://shop.hak5.org/products/omg-cable">attacks</a>.				 
+				<li> (Windows) <b>OS hardening</b>:
 			<ul>
 			<li> Low friction: Apply the patches / Full disk encryption / SmartScreen / Disable Network discovery and sharing unless absolutely needed / Disable browser profile syncing across devices / Disable macros / Core isolation.
 			<li> Medium friction but high value: Don't daily drive admin / Smart App Control.
@@ -169,15 +171,15 @@
 			<li>  <b>Keep signing segregated</b> from other activities.
 			<ul>
 
-			<li> If you are dedicated, run a secure signing computer for ONLY crypto transactions and exchange logins. 
+			<li> Low friction: run a separate internet browser for ONLY crypto transactions and exchange logins. 
+
+			<li> Medium friction: run a separate user account for your crypto transactions and exchange logins. 
+			<li> High friction: run a secure signing computer for ONLY crypto transactions and exchange logins. If you are comfortable doing so, run signing on your main computer and run EVERYTHING ELSE in VMs or another computer you remote into. Be careful with shared clipboard as it is a common attack vector.
 			  
-			<li> If you are comfortable doing so, run signing on your main computer and run EVERYTHING ELSE in VMs or another computer you remote into. Be careful with shared clipboard as it is a common attack vector.
-			  
-			<li> If you want the lowest effort option, run a separate internet browser for ONLY crypto transactions and exchange logins. 
 			</ul>
 			<li>  Install <b>minimal software</b>. 
 			<ul> 
-			<li> The highest value is to avoid putting bad software on the machine you do crypto transfers on: 
+			<li> Low friction: Do not put high risk software on the machine you do crypto transfers on: 
 			  <ul>
 			<li>   ANYTHING ANYONE SENDS YOU EVEN IF THEY ARE YOUR TELEGRAM FRIEND.
 				
@@ -189,9 +191,9 @@
 				
 				<li>  if you must run these, run these in a VM (or a separate, unprivileged account).
 			</ul>	
-			<li>  The next step is to affirmatively verify all software: known version, trusted source, deliberately trusted vendor, minimum necessary privileges. 
+			<li>  Medium friction: Affirmatively verify all software: known version, trusted source, deliberately trusted vendor, minimum necessary privileges. 
 			  
-			<li>  The final step is to be even more restricted because you are using a dedicated signing machine and making it hard to use for other stuff is a feature, not a bug. Before installing anything, ask: why does a dedicated signing environment need this at all? If the task is not directly related to signing crypto transactions, install it somewhere else -- on another machine or in a VM. I use Edge with uBlock origin, Bitwarden, Rabby, Phantom; Keepass; Hyper-V; three pieces of network software (kept vague for opsec); and that's it.
+			<li>  High friction: Be very restrictive because you are using a dedicated signing machine and making it hard to use for other stuff is a feature, not a bug. Before installing anything, ask: why does a dedicated signing environment need this at all? If the task is not directly related to signing crypto transactions, install it somewhere else -- on another machine or in a VM. I use Edge with uBlock origin, Bitwarden, Rabby, Phantom; Keepass; Hyper-V; three pieces of network software (kept vague for opsec); and that's it.
 			  </ul>
 			  </ul>
           </div>
