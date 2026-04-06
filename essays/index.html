@@ -92,9 +92,114 @@
       </div>
 
 
-
       <!-- Make Money -->
       <div class="col-12  ">
+        <div class="card ">
+          <div class="card-title" id="stop-being-so-insecure">
+            Make money:
+            <span id="bots">Stop being so insecure
+            </span>
+          </div>
+          <div class="card-body">
+
+            <p>Recent crypto hacks should cause you to reconsider your security strategy. This guide is designed to answer a simple question: what should you do TODAY to be more secure? Maximum security is not for everyone or for every transaction. There are real usability tradeoffs, so I have structured this guide in layers to make them clear. Whatever level of security you choose, it should be a deliberate choice. </p>
+ 
+            <p><strong id="account-takeovers">Prevent account takeover</strong> (highest probability)</p>
+            <ul>
+              <li>Install a <b>password manager</b>, e.g., BitWarden. Put all your passwords in it and none of your seed phrases or 2FA. Change them. Unique, randomly generated passwords. 2FA plus a unique hard master password secure it. 
+              <li> Remember that <b>email is a very high value target</b>. Use a dedicated email account for exchanges, I go further and use a dedicated outlook alias for each.
+			  <li> Do not discover crypto sites through links from Twitter, Telegram, Discord, email, or search ads. <b>Bookmark all critical sites</b> (exchanges, dApps). Don't use search to find sites, if you do check very carefully.
+			  <li> <b>Buy two yubikeys</b>, put all your 2fa on them. Store one in a vault offsite. Remove SMS-based 2FA everywhere AND remove SMS as a recovery method (those are separate). Add 2FA for email and other critical accounts.
+			  <li> Enable all exchange security features - <b>WD whitelist, 24 hour timelock</b>, etc. Lock down API keys - remember trading access can also extract funds.
+            </ul>
+
+            <p><strong id="secure-your-keys">Secure your keys</strong> (highest dollar value)</p>
+            <ul>
+			<li> Buy a <b>hardware wallet</b>
+
+			<li> <b>Use Rabby</b> to simulate transactions, warn about low trust addresses, and warn about bad addresses. This is only a warning, not foolproof.
+			 
+			<li> <b>Back up your seed phrases</b>. Decide if you want multiple whole-phrase backups or whether you are comfortable using splitting. For splitting, 4/6 Shamir is built into Trezor. I'd suggest setting up a clean offline install, testing recovery, testing recovery again, and storing the shards in separate physical locations. Recovery must be tested end-to-end before storing funds.
+
+			<li> <b>Read the transactions</b> before signing - always verify on device, that's the whole point. Chain / contract / amount / method / destination. Never sign blind. 
+
+			<li> Write a <b>crypto transfer checklist</b>. Checklists help stop you from making avoidable mistakes.
+
+			<li> Keep a <b>local address book</b>. Check addresses on the on-device screen against it. Prevent "address poisoning".
+						</ul>
+
+
+						<p><strong id="reduce-exposure">Reduce exposure</strong>  </p>
+						<ul>
+			<li> <b>Revoke</b> all unlimited or outdated approvals. Do so on an ongoing basis.
+
+			<li> <b>Segment</b> signing devices to limit blast radius. 
+			<ul>
+			   <li> Use a minor hot wallet for routine dApp interaction so a single mistake has limited blast radius. I like browser based hot wallets for small amounts. It keeps you from building a habbit of signing without looking. 
+			   
+			   <li> Keep moderate amounts in a 'hot' hardware wallets (e.g., <10% of NW).
+			   
+			   <li> Put the rest into a separate 'treasury' hardware wallet. No dApps on that wallet, ONLY simple transfers.
+			</ul>
+			 </ul>
+
+
+
+
+
+            <p><strong id="prepare-for-failure">Prepare for failure</strong>  </p>
+            <ul>
+			<li> Give your loved ones a <b>recovery plan</b>. 
+
+			<li> Keep a safe <b>"recovery" cold wallet</b> you can move to. Don't use it, except for emergency lockdown scenarios.
+			<li> Keep the DeBank app running for alerts on major wallets.
+			<li>  I would not install exchange phone apps. However, if you are comfortable doing so in a way that does not leak secrets, get exchange withdrawal alerts on your phone.
+			<li> Write out <b>action plans for hacks</b> / exchange failures / protocol failures. Pre-written plan -> move fast -> limit losses.
+			 </ul>
+
+
+						<p><strong id="harden-environment">Harden environment</strong>  </p>
+						<ul>
+			<li> For OS hardening, keep in mind that most <b>real-world losses come from phishing, signing malicious transactions, account takeover, and running bad stuff</b>; not kernel exploits. For Windows, in categories of increasing pain:  
+			<ul>
+			<li> Low friction: Apply the patches / Full disk encryption / SmartScreen / Disable Network discovery and sharing unless absolutely needed / Disable browser profile syncing across devices / Disable macros / Core isolation.
+			<li> Medium friction but high value: Don't daily drive admin / Smart App Control.
+			<li> High friction:  Windows Defender Application Control / outbound firewall / gpedit.msc to Prevent installation of devices not described by other policy settings + Require additional authentication at startup.
+			</ul>
+			<li>  <b>Keep signing segregated</b> from other activities.
+			<ul>
+
+			<li> If you are dedicated, run a secure signing computer for ONLY crypto transactions and exchange logins. 
+			  
+			<li> If you are comfortable doing so, run signing on your main computer and run EVERYTHING ELSE in VMs or another computer you remote into. Be careful with shared clipboard as it is a common attack vector.
+			  
+			<li> If you want the lowest effort option, run a separate internet browser for ONLY crypto transactions and exchange logins. 
+			</ul>
+			<li>  Install <b>minimal software</b>. 
+			<ul> 
+			<li> The highest value is to avoid putting bad software on the machine you do crypto transfers on: 
+			  <ul>
+			<li>   ANYTHING ANYONE SENDS YOU EVEN IF THEY ARE YOUR TELEGRAM FRIEND.
+				
+			<li>  development tooling (package managers, VSCode).
+				
+			<li>  pirated software.
+				
+			<li>  unknown browser extensions (they are right next to yourvauge wallet).
+				
+				<li>  if you must run these, run these in a VM (or a separate, unprivileged account).
+			</ul>	
+			<li>  The next step is to affirmatively verify all software: known version, trusted source, deliberately trusted vendor, minimum necessary privileges. 
+			  
+			<li>  The final step is to be even more restricted because you are using a dedicated signing machine and making it hard to use for other stuff is a feature, not a bug. Before installing anything, ask: why does a dedicated signing environment need this at all? If the task is not directly related to signing crypto transactions, install it somewhere else -- on another machine or in a VM. I use Edge with uBlock origin, Bitwarden, Rabby, Phantom; Keepass; Hyper-V; three pieces of network software (kept vague for opsec); and that's it.
+			  </ul>
+			  </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12  "> 
+        
         <div class="card ">
           <div class="card-title" id="make-money">
             Make money:
