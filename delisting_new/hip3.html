@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>stalequant.com - Hyperliquid HIP-3 Risk Monitor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../styles.css?v=20260511-hip3-dex-intro" />
+</head>
+
+<body>
+    <div id="app">
+        <div class="container py-4 px-4">
+            <div class="row g-4">
+
+                <!-- Header -->
+                <div class="col-12">
+                    <div class="card page-header-card">
+                        <div class="page-header">
+                            <div>
+                                <div class="page-kicker">stalequant.com</div>
+                                <h1>Hyperliquid HIP-3 Risk Monitor</h1>
+                            </div>
+                            <div class="page-header-actions">
+                                <span v-if="meta" class="version-badge">v1.2</span>
+                                <span v-if="meta" class="version-badge">
+                                    {{ generatedHeaderLabel }}
+                                </span>
+                                <a href="index.html" class="btn btn-secondary">Delisting Recos</a>
+                                <a href="../index.html" class="btn btn-secondary">Home</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dex Switcher -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="dex-switcher" role="group" aria-label="Dex switcher">
+                                <button v-for="dex in dexOptions" :key="dex"
+                                    :class="['btn', 'btn-secondary', { active: selectedDex === dex }]"
+                                    :aria-pressed="selectedDex === dex"
+                                    @click="selectedDex = dex">
+                                    {{ dexLabel(dex) }}
+                                </button>
+                            </div>
+                            <p class="table-helper-text mt-3 mb-0">
+                                <strong>Select Hypercore or a HIP-3 DEX to view market-level risk metrics.</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intro -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-title">
+                            <span>{{ dexLabel(selectedDex) }} Report Intro</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="page-executive-summary">
+                                The current report shows data for <strong>{{ dexLabel(selectedDex) }}</strong> covering
+                                {{ filteredRows.length }} pairs. It compares oracle volatility and order book slippage
+                                against each market's maintenance margin, including a slippage check for an order sized
+                                at 5% of open interest, and evaluates OI caps separately against actual OI plus a buffer.
+                                "% MM" is a simple stress-to-maintenance-margin comparison, not a full
+                                liquidation-loss simulation. Higher "% MM" means the measured stress consumes more of
+                                the market's maintenance-margin buffer. Warnings identify markets where a metric exceeds the
+                                configured threshold for that margin mode. Data was generated {{ generatedHeaderLabel }}.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Warnings -->
+                <div class="col-12">
+                    <div class="card">
+                        <details class="methodology-details" open>
+                            <summary class="card-title methodology-summary">
+                                <span>{{ dexLabel(selectedDex) }} Warnings</span>
+                                <span class="summary-hint">{{ warningCountLabel }}</span>
+                            </summary>
+                            <div class="card-body">
+                                <p v-if="hasMaintenanceMarginWarnings" class="table-helper-text">
+                                    "% MM" = metric / maintenance margin. 100% means the stress equals the maintenance
+                                    margin buffer.
+                                </p>
+                                <div v-if="warningRows.length === 0" class="empty-state">
+                                    No warnings
+                                </div>
+                                <div v-for="group in warningGroups" :key="group.label"
+                                    :class="['methodology-section', 'warning-section', { 'oi-cap-warning-section': group.isOiCap }]">
+                                    <div class="warning-section-header">
+                                        <strong :title="group.tooltip">{{ group.label }}</strong>
+                                        <span class="summary-hint">{{ group.countLabel }}</span>
+                                    </div>
+                                    <p v-if="group.isOiCap" class="warning-section-note">
+                                        Uses OI cap / (OI + $100K), not maintenance margin.
+                                    </p>
+                                    <div class="warnings-list">
+                                        <span v-for="row in group.rows" :key="`${group.label}-${row.dex}-${row.symbol}`"
+                                            :class="['warning-token', `severity-${row.severity}`]">
+                                            {{ row.assetLabel }} {{ row.value }}
+                                        </span>
+                                        <span v-if="group.overflowCount" class="warning-token severity-yellow">
+                                            +{{ group.overflowCount }} more
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- Plots -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-title">
+                            <span>{{ dexLabel(selectedDex) }} Risk Profiles Of Cross Margin Assets</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="hip3-plots-grid">
+                                <div v-for="plot in plotConfigs" :key="plot.id"
+                                    :id="plot.id"
+                                    class="hip3-plot"
+                                    role="img"
+                                    :aria-label="`${selectedDex} ${plot.label}`">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-title">
+                            <span>All {{ dexLabel(selectedDex) }} Market Data</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-toolbar">
+                                <div class="table-actions">
+                                    <label class="search-control">
+                                        <span>Search</span>
+                                        <input v-model.trim="searchQuery" type="search" placeholder="Symbol">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th v-for="col in columns" :key="col.field"
+                                                :class="{ numeric: col.numeric, sortable: col.sortable }"
+                                                @click="sortBy(col)">
+                                                <button class="sort-header" type="button"
+                                                    :title="col.tooltip || col.label"
+                                                    :aria-label="col.tooltip || col.label">
+                                                    <span class="stacked-header-label">{{ col.label }}</span>
+                                                    <span class="sort-indicator" aria-hidden="true">{{ sortIndicator(col) }}</span>
+                                                </button>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-if="paginatedRows.length === 0">
+                                            <td :colspan="columns.length" class="empty-state">
+                                                No dex assets match the current filters.
+                                            </td>
+                                        </tr>
+                                        <tr v-for="row in paginatedRows" :key="row.wire_symbol">
+                                            <td v-for="col in columns" :key="col.field" :class="{ numeric: col.numeric }">
+                                                {{ formatCell(row[col.field], col) }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="pagination-container">
+                                <div class="pagination-status">
+                                    <small class="text-muted">{{ paginationLabel }}</small>
+                                </div>
+                                <div class="pagination-controls">
+                                    <button class="btn btn-secondary"
+                                        @click="currentPage = Math.max(1, currentPage - 1)"
+                                        :disabled="currentPage === 1">
+                                        Previous
+                                    </button>
+                                    <button class="btn btn-secondary"
+                                        @click="currentPage = Math.min(totalPages, currentPage + 1)"
+                                        :disabled="currentPage >= totalPages">
+                                        Next
+                                    </button>
+                                </div>
+                                <div class="pagination-actions">
+                                    <button class="btn btn-secondary" @click="downloadCSV">
+                                        Download CSV
+                                    </button>
+                                    <a href="https://github.com/stalequant/stalequant/blob/main/delisting_reco_code/src/scoring/hip3_report.py"
+                                        target="_blank" class="btn btn-secondary">
+                                        Code
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scores Table -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-title">
+                            <span>All {{ dexLabel(selectedDex) }} Market Scores</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="table-helper-text">
+                                MM = maintenance margin. "% MM" shows each risk metric as a percentage of that
+                                market's maintenance margin. It is a simple stress comparison, not a full
+                                liquidation-loss simulation.
+                            </p>
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th v-for="col in scoreColumns" :key="col.field"
+                                                :class="{ numeric: col.numeric, sortable: col.sortable }"
+                                                @click="sortScoreBy(col)">
+                                                <button class="sort-header" type="button"
+                                                    :title="col.tooltip || col.label"
+                                                    :aria-label="col.tooltip || col.label">
+                                                    <span class="stacked-header-label">{{ col.label }}</span>
+                                                    <span class="sort-indicator" aria-hidden="true">{{ scoreSortIndicator(col) }}</span>
+                                                </button>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-if="paginatedScoreRows.length === 0">
+                                            <td :colspan="scoreColumns.length" class="empty-state">
+                                                No dex scores match the current filters.
+                                            </td>
+                                        </tr>
+                                        <tr v-for="row in paginatedScoreRows" :key="`score-${row.wire_symbol}`">
+                                            <td v-for="col in scoreColumns" :key="col.field"
+                                                :class="{ numeric: col.numeric }"
+                                                :style="rawMetricCellStyle(row, col)">
+                                                <span v-if="rawMetricCellGrade(row, col)" class="graded-cell">
+                                                    <span class="cell-grade">{{ rawMetricCellGrade(row, col) }}</span>
+                                                    <span class="cell-value">{{ formatCell(row[col.field], col) }}</span>
+                                                </span>
+                                                <span v-else>{{ formatCell(row[col.field], col) }}</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="pagination-container">
+                                <div class="pagination-status">
+                                    <small class="text-muted">{{ scorePaginationLabel }}</small>
+                                </div>
+                                <div class="pagination-controls">
+                                    <button class="btn btn-secondary"
+                                        @click="scoreCurrentPage = Math.max(1, scoreCurrentPage - 1)"
+                                        :disabled="scoreCurrentPage === 1">
+                                        Previous
+                                    </button>
+                                    <button class="btn btn-secondary"
+                                        @click="scoreCurrentPage = Math.min(scoreTotalPages, scoreCurrentPage + 1)"
+                                        :disabled="scoreCurrentPage >= scoreTotalPages">
+                                        Next
+                                    </button>
+                                </div>
+                                <div class="pagination-actions">
+                                    <button class="btn btn-secondary" @click="downloadScoresCSV">
+                                        Download CSV
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Methodology -->
+                <div class="col-12">
+                    <div class="card">
+                        <details class="methodology-details">
+                            <summary class="card-title methodology-summary">
+                                <span>Methodology</span>
+                                <span class="summary-hint">fields, warnings, charts</span>
+                            </summary>
+                            <div class="card-body">
+                                <div class="methodology-section">
+                                    <details class="methodology-subdetails">
+                                        <summary>Field Definitions</summary>
+                                        <p>
+                                            This page is generated from the latest Hyperliquid meta/context recorder
+                                            snapshot. It includes the main Hyperliquid perp dex and HIP-3 perp dexes,
+                                            using active assets from each dex universe and the matching asset context
+                                            row for market state.
+                                        </p>
+                                        <p>
+                                            Dex, symbol, max leverage, growth mode, margin table, funding multiplier,
+                                            deployer, oracle updater, and fee recipient come from Hyperliquid dex
+                                            metadata. Margin mode is read from the asset metadata:
+                                            <code>strictIsolated</code> is strict isolated, <code>noCross</code> or
+                                            <code>onlyIsolated</code> is isolated, and all other assets are treated as
+                                            cross margin.
+                                        </p>
+                                        <p>
+                                            Funding Mult. is the Hyperliquid metadata field
+                                            <code>assetToFundingMultiplier</code>. It scales the market's funding-rate
+                                            calculation for assets that define an asset-specific multiplier. A blank
+                                            value means the metadata did not provide an asset-specific funding
+                                            multiplier for that market.
+                                        </p>
+                                        <p>
+                                            Growth is the Hyperliquid asset <code>growthMode</code> metadata flag. In
+                                            the current data, observed values are <code>enabled</code> or blank. Blank
+                                            means the asset did not provide a growth-mode flag in the metadata.
+                                        </p>
+                                        <p>
+                                            Open interest dollars are estimated as open interest multiplied by mark
+                                            price, falling back to oracle or mid price when needed. Volume is
+                                            Hyperliquid's reported rolling 24-hour notional volume from the latest asset
+                                            context, not a calendar-day candle. OI cap is the current streaming
+                                            open-interest cap configured in the Hyperliquid dex metadata; this report
+                                            treats it as the live configured cap available in the recorder data. OI cap /
+                                            (OI + $100K) is calculated as
+                                            <code>streaming OI cap / (open interest dollars + 100000)</code>. The $100K
+                                            term reflects that very small-OI markets are less of a systematic concern.
+                                        </p>
+                                        <p>
+                                            Every slippage value shown in the Assets table, Scores table, and charts is
+                                            one-way taker slippage from mid price, in basis points. The recorder stores
+                                            buy-side plus sell-side round-trip spreads, so the page displays half of the
+                                            recorded spread. If a raw snapshot has $1K depth but is missing $10K or
+                                            $100K depth, the report uses a conservative 1000bp round-trip depth value
+                                            for that missing level. Depth medians are forced to be nondecreasing across
+                                            larger order sizes. The OI-sized slippage metric uses an order notional
+                                            equal to 5% of open interest and interpolates across those depth levels. If
+                                            it needs a missing higher level, that level is conservatively filled from
+                                            the prior level and capped at 1000bp before the one-way display conversion.
+                                        </p>
+                                        <p>
+                                            Oracle jump estimates are stored and displayed in basis points. Oracle prices
+                                            are resampled to 15-second observations. The 15-second jump is the empirical
+                                            quantile of absolute one-period log-price moves at the once-per-week tail
+                                            frequency:
+                                            <code>quantile(abs(diff(log(price), 1)), 1 - 1 / periods_per_week)</code>.
+                                            Because observations are spaced 15 seconds apart, a 15-minute move spans 60
+                                            observations. The 15-minute jump uses overlapping absolute 60-period
+                                            log-price moves and a quantile level equivalent to roughly one exceedance
+                                            per week of non-overlapping 15-minute windows:
+                                            <code>quantile(abs(diff(log(price), 60)), 1 - 60 / periods_per_week)</code>.
+                                            This is not a fitted tail model and is not annualized; it is an empirical
+                                            absolute move estimate from the recorded oracle history. Because the
+                                            15-minute windows overlap, adjacent samples are autocorrelated and the
+                                            effective independent sample count is smaller than the raw window count. A
+                                            market needs at least 1,000 usable samples for each oracle-jump window.
+                                            Otherwise, jump analysis is marked as still gathering data.
+                                        </p>
+                                        <p>
+                                            MM means maintenance margin. It follows the exchange-style calculation
+                                            <code>1 / max leverage / 2</code>, converted to basis points. The % MM
+                                            columns compare each raw risk metric to that maintenance margin value. For
+                                            example, a 50bp jump against 100bp MM is shown as 50% MM. This comparison
+                                            does not model initial margin, liquidation mechanics, liquidation fees,
+                                            mark/oracle behavior, insurance or ADL assumptions, or position
+                                            concentration.
+                                        </p>
+                                        <p>
+                                            Max Risk is the largest available % MM reading across the 15-second
+                                            oracle jump, 15-minute oracle jump, $10K one-way slippage, and 5% OI
+                                            one-way slippage metrics. It is a triage field: higher values mean the most
+                                            concerning observed risk metric consumes more of the market's maintenance
+                                            margin buffer. Missing inputs are ignored; if every risk input is missing,
+                                            Max Risk is blank.
+                                        </p>
+                                    </details>
+
+                                    <details class="methodology-subdetails">
+                                        <summary>Warning Thresholds</summary>
+                                        <p>
+                                            Warnings are mode-aware. Yellow means the metric is at or above its
+                                            threshold. Orange means the metric is at least 25% over that threshold. Red
+                                            means the metric is at least 50% over that threshold. Grey means the market
+                                            has insufficient oracle history for jump analysis.
+                                        </p>
+                                        <p>
+                                            For 15-second oracle jumps, $10K slippage, and 5% OI slippage, the yellow
+                                            thresholds are 50% MM for cross, 75% MM for isolated, and 100% MM for strict
+                                            isolated. For 15-minute oracle jumps, the thresholds are 100% MM for cross,
+                                            150% MM for isolated, and 200% MM for strict isolated.
+                                        </p>
+                                        <p>
+                                            These thresholds are configured risk-policy thresholds. They are not fitted
+                                            from historical loss data.
+                                        </p>
+                                        <div class="table-wrapper hip3-warning-threshold-table-wrapper">
+                                            <table class="hip3-warning-threshold-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Metric</th>
+                                                        <th>Cross</th>
+                                                        <th>Isolated</th>
+                                                        <th>Strict isolated</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>15s jump</td><td>50% MM</td><td>75% MM</td><td>100% MM</td></tr>
+                                                    <tr><td>$10K slippage</td><td>50% MM</td><td>75% MM</td><td>100% MM</td></tr>
+                                                    <tr><td>5% OI slippage</td><td>50% MM</td><td>75% MM</td><td>100% MM</td></tr>
+                                                    <tr><td>15m jump</td><td>100% MM</td><td>150% MM</td><td>200% MM</td></tr>
+                                                    <tr><td>OI cap ratio</td><td>20x</td><td>50x</td><td>100x</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <p>
+                                            OI cap / (OI + $100K) warns above 20x for cross, 50x for isolated, and 100x
+                                            for strict isolated. The warning pills include leverage and margin mode:
+                                            cross assets show <code>Xxdex:COIN</code>, isolated assets show
+                                            <code>IsoXxdex:COIN</code>, and strict isolated assets show
+                                            <code>StrictXxdex:COIN</code>.
+                                        </p>
+                                    </details>
+
+                                    <details class="methodology-subdetails">
+                                        <summary>Chart Ranges</summary>
+                                        <p>
+                                            The risk profile charts only use cross-margin assets. The blue range is the
+                                            Hypercore cross-margin distribution, grouped by maintenance-margin basis
+                                            points. The green range is the non-main HIP-3 cross-margin distribution,
+                                            grouped the same way. For each MM bucket, the shaded band spans the 10th to
+                                            90th percentile of the plotted metric.
+                                        </p>
+                                        <p>
+                                            White dots are the selected dex's cross-margin assets. Labels show the asset
+                                            symbol. The x-axis is fixed from 0 to 2000 maintenance-margin bp so leverage
+                                            changes and outlier placement are comparable across dexes. The y-axis is the
+                                            raw plotted metric: 15-second jump bp, 15-minute jump bp, one-way slippage
+                                            for 5% of OI, or one-way slippage for $10K.
+                                        </p>
+                                    </details>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- Data Summary -->
+                <div class="col-12">
+                    <div class="card">
+                        <details class="methodology-details">
+                            <summary class="card-title methodology-summary">
+                                <span>Data Summary</span>
+                                <span class="summary-hint">{{ generatedAtLabel }}</span>
+                            </summary>
+                            <div class="card-body">
+                                <div class="methodology-section">
+                                    <strong>Current Snapshot</strong>
+                                    <div class="table-wrapper">
+                                        <table class="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Field</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Snapshot file</td>
+                                                    <td>{{ meta.source_file }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Snapshot time</td>
+                                                    <td>{{ formatMetaTime(meta.snapshot_recorded_at_utc) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Assets</td>
+                                                    <td>{{ formatMetaNumber(meta.asset_count) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Dexes</td>
+                                                    <td>{{ formatMetaNumber(meta.dex_count) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Assets with L2</td>
+                                                    <td>{{ formatMetaNumber(meta.l2_asset_count) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Assets with oracle jump estimates</td>
+                                                    <td>{{ formatMetaNumber(meta.oracle_move_asset_count) }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <strong>Time Series</strong>
+                                    <div class="table-wrapper">
+                                        <table class="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Series</th>
+                                                    <th>File</th>
+                                                    <th>Oldest</th>
+                                                    <th>Latest</th>
+                                                    <th>Samples</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="row in ((meta && meta.time_series) || [])" :key="row.label">
+                                                    <td>{{ row.label }}</td>
+                                                    <td>{{ row.file }}</td>
+                                                    <td>{{ formatMetaTime(row.oldest_at_utc) }}</td>
+                                                    <td>{{ formatMetaTime(row.latest_at_utc) }}</td>
+                                                    <td>{{ formatMetaNumber(row.sample_count) }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
+    <script src="hip3_data.js?v=20260511-hip3-dex-intro"></script>
+    <script src="hip3_app.js?v=20260511-hip3-dex-intro"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
