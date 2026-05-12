@@ -1030,6 +1030,87 @@ body {
   gap: var(--spacing-md);
 }
 
+.hip3-chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.hip3-chart-mode-label {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.hip3-chart-explanation {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 var(--spacing-md);
+  max-width: 920px;
+}
+
+.hip3-shared-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.hip3-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.hip3-legend-line {
+  display: inline-block;
+  width: 28px;
+  border-top: 2px solid currentColor;
+}
+
+.hip3-legend-line-dotted {
+  border-top-style: dotted;
+}
+
+.hip3-legend-line-teal {
+  color: #2dd4bf;
+}
+
+.hip3-legend-dot {
+  color: #ffffff;
+}
+
+.hip3-legend-line-grey {
+  color: #9ca3af;
+}
+
+.hip3-legend-line-yellow {
+  color: #f6c344;
+}
+
+.hip3-legend-line-orange {
+  color: #f59e0b;
+}
+
+.hip3-legend-line-red {
+  color: #ef4444;
+}
+
+.hip3-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
 .hip3-plot {
   min-height: 340px;
 }
@@ -1960,24 +2041,6 @@ a.btn-secondary {
   flex: 0 0 auto !important;
   margin-left: auto;
   white-space: nowrap;
-}
-
-.warning-section-note {
-  margin: 2px 0 0;
-  color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.card-body .warning-section-note {
-  margin: 0;
-}
-
-.oi-cap-warning-section {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  padding: 0;
 }
 
 .warnings-list {
