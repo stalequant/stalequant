@@ -11,8 +11,11 @@ const HIP3_COLUMNS = [
     { field: 'open_interest_dollars', label: 'OI $', tooltip: 'Open interest multiplied by mark price, falling back to oracle or mid price when needed.', sortable: true, numeric: true, money: true },
     { field: 'streaming_oi_cap', label: 'OI Cap $', tooltip: 'Current streaming open-interest cap configured in Hyperliquid dex metadata assetToStreamingOiCap; this is the live configured cap used by the report.', sortable: true, numeric: true, money: true },
     { field: 'hl_l2_1k_bp', label: '$1K L2 slip bp', tooltip: 'Median one-way Hyperliquid taker slippage from mid in bp for $1K notional.', sortable: true, numeric: true, half: true },
+    { field: 'hl_l2_2_5k_bp', label: '$2.5K L2 slip bp', tooltip: 'Median one-way Hyperliquid taker slippage from mid in bp for $2.5K notional.', sortable: true, numeric: true, half: true },
     { field: 'hl_l2_10k_bp', label: '$10K L2 slip bp', tooltip: 'Median one-way Hyperliquid taker slippage from mid in bp for $10K notional.', sortable: true, numeric: true, half: true },
+    { field: 'hl_l2_25k_bp', label: '$25K L2 slip bp', tooltip: 'Median one-way Hyperliquid taker slippage from mid in bp for $25K notional.', sortable: true, numeric: true, half: true },
     { field: 'hl_l2_100k_bp', label: '$100K L2 slip bp', tooltip: 'Median one-way Hyperliquid taker slippage from mid in bp for $100K notional.', sortable: true, numeric: true, half: true },
+    { field: 'hl_l2_250k_bp', label: '$250K L2 slip bp', tooltip: 'Median one-way Hyperliquid taker slippage from mid in bp for $250K notional.', sortable: true, numeric: true, half: true },
     { field: 'hl_l2_1m_bp', label: '$1M L2 slip bp', tooltip: 'Median one-way Hyperliquid taker slippage from mid in bp for $1M notional.', sortable: true, numeric: true, half: true },
     { field: 'funding_multiplier', label: 'Funding Mult.', tooltip: 'Hyperliquid metadata field assetToFundingMultiplier. It scales the market funding calculation; blank means no asset-specific multiplier was provided.', sortable: true, numeric: true },
     { field: 'growth_mode', label: 'Growth', tooltip: 'Hyperliquid asset growthMode metadata. Currently observed values are enabled or blank; blank means no growth-mode flag was provided.', sortable: true },
@@ -23,12 +26,14 @@ const HIP3_SCORE_COLUMNS = [
     { field: 'symbol', label: 'Symbol', tooltip: 'Asset symbol displayed inside the selected dex.', sortable: true },
     { field: 'margin_mode', label: 'Margin Mode', tooltip: 'Cross, isolated, or strict isolated margin mode inferred from Hyperliquid metadata.', sortable: true },
     { field: 'im_pct', label: 'MM bp', tooltip: 'Maintenance margin estimate following the exchange-style calculation: 1 / max leverage / 2, displayed in basis points.', sortable: true, numeric: true, bp: true },
-    { field: 'max_pct_mm', label: 'Max Risk', tooltip: 'Largest available risk metric as a percent of maintenance margin across oracle jumps and slippage. Higher means the most concerning metric is using more of the maintenance margin buffer.', sortable: true, numeric: true, percentPoints: true, pctOfImDisplay: true },
+    { field: 'max_pct_mm', label: 'Max Risk', tooltip: 'Largest available risk metric as a percent of maintenance margin across mark-price jumps, impact-price premium, and slippage. Higher means the most concerning metric is using more of the maintenance margin buffer.', sortable: true, numeric: true, percentPoints: true, pctOfImDisplay: true },
     { field: 'score_oi_cap_to_oi', label: 'OI Cap / (OI + $100K)', tooltip: 'Streaming OI cap divided by open interest dollars plus $100K. The $100K term downweights tiny-OI markets as less systemically concerning.', sortable: true, numeric: true, decimals: 1, gradeField: 'score_oi_cap_to_oi_grade', hideGrade: true },
-    { field: 'weekly_15s_index_dev', label: 'Jump 15s bp', tooltip: 'Empirical absolute 15-second oracle log-price move at the once-per-week tail frequency, in bp.', sortable: true, numeric: true, decimals: 0, metricGrade: true },
-    { field: 'weekly_15s_pct_im', label: '% MM', tooltip: '15-second oracle jump as a percent of maintenance margin.', sortable: true, numeric: true, percentPoints: true, pctOfImDisplay: true },
-    { field: 'weekly_15m_index_dev', label: 'Jump 15m bp', tooltip: 'Empirical absolute 15-minute oracle log-price move using a quantile equivalent to about one exceedance per week of non-overlapping 15-minute windows, in bp.', sortable: true, numeric: true, decimals: 0, metricGrade: true },
-    { field: 'weekly_15m_pct_im', label: '% MM', tooltip: '15-minute oracle jump as a percent of maintenance margin.', sortable: true, numeric: true, percentPoints: true, pctOfImDisplay: true },
+    { field: 'weekly_15s_index_dev', label: 'Jump 15s bp', tooltip: 'Empirical absolute 15-second mark log-price move at the once-per-week tail frequency, in bp.', sortable: true, numeric: true, decimals: 0, metricGrade: true },
+    { field: 'weekly_15s_pct_im', label: '% MM', tooltip: '15-second mark-price jump as a percent of maintenance margin.', sortable: true, numeric: true, percentPoints: true, pctOfImDisplay: true },
+    { field: 'weekly_15m_index_dev', label: 'Jump 15m bp', tooltip: 'Empirical absolute 15-minute mark log-price move using a quantile equivalent to about one exceedance per week of non-overlapping 15-minute windows, in bp.', sortable: true, numeric: true, decimals: 0, metricGrade: true },
+    { field: 'weekly_15m_pct_im', label: '% MM', tooltip: '15-minute mark-price jump as a percent of maintenance margin.', sortable: true, numeric: true, percentPoints: true, pctOfImDisplay: true },
+    { field: 'avg_abs_impact_premium_bp', label: 'Avg Impact Mid Premium', tooltip: 'Average absolute premium of impact-price midpoint over oracle, abs(((impact bid + impact ask) / 2) / oracle - 1), in bp.', sortable: true, numeric: true, decimals: 0, metricGrade: true },
+    { field: 'impact_premium_pct_im', label: '% MM', tooltip: 'Average absolute impact-price premium as a percent of maintenance margin.', sortable: true, numeric: true, percentPoints: true, pctOfImDisplay: true },
     { field: 'score_impact_5pct_oi_bp', label: '5% OI Slippage', tooltip: 'Estimated one-way slippage from mid for an order sized at 5% of open interest.', sortable: true, numeric: true, decimals: 0, half: true, metricGrade: true, strictness: 2 },
     { field: 'impact_5pct_oi_pct_im', label: '% MM', tooltip: '5% OI slippage as a percent of maintenance margin.', sortable: true, numeric: true, percentPoints: true, pctOfImDisplay: true, strictness: 2 },
     { field: 'hl_l2_10k_bp', label: '$10K Slippage', tooltip: 'Estimated one-way slippage from mid for a $10K order.', sortable: true, numeric: true, decimals: 0, half: true, metricGrade: true, strictness: 2 },
@@ -36,20 +41,26 @@ const HIP3_SCORE_COLUMNS = [
 ];
 
 const HIP3_GRADES = ['F', 'D', 'C-', 'C', 'C+', 'B-', 'B', 'B+', 'A-', 'A', 'A+'];
+const HIP3_MARGIN_MODE_OPTIONS = [
+    { value: 'cross', label: 'Cross Margin' },
+    { value: 'isolated', label: 'Isolated Margin' },
+    { value: 'strict isolated', label: 'Strict Isolated Margin' },
+];
 const HIP3_PLOT_CONFIGS = [
-    { id: 'hip3PlotJump15s', field: 'weekly_15s_index_dev', label: 'Jump 15s bp' },
-    { id: 'hip3PlotJump15m', field: 'weekly_15m_index_dev', label: 'Jump 15m bp' },
-    { id: 'hip3PlotSlipOi', field: 'score_impact_5pct_oi_bp', label: '5% OI Slippage', half: true },
-    { id: 'hip3PlotSlip10k', field: 'hl_l2_10k_bp', label: '$10K Slippage', half: true },
+    { id: 'hip3PlotJump15s', field: 'weekly_15s_index_dev', label: 'Jump 15s bp', crossWarningPct: 50 },
+    { id: 'hip3PlotJump15m', field: 'weekly_15m_index_dev', label: 'Jump 15m bp', crossWarningPct: 100 },
+    { id: 'hip3PlotImpactPremium', field: 'avg_abs_impact_premium_bp', label: 'Avg Impact Mid Premium bp', crossWarningPct: 20, crossOrangePct: 30, crossRedPct: 40 },
+    { id: 'hip3PlotSlipOi', field: 'score_impact_5pct_oi_bp', label: '5% OI Slippage', half: true, crossWarningPct: 50 },
+    { id: 'hip3PlotSlip10k', field: 'hl_l2_10k_bp', label: '$10K Slippage', half: true, crossWarningPct: 12.5 },
 ];
 
 const HIP3_WARNING_TOOLTIPS = {
-    'Historical 15-second oracle moves high relative to MM': 'Measure: 15-second oracle jump as a percent of maintenance margin. Yellow starts at 50% MM for cross, 75% for isolated, and 100% for strict isolated.',
-    'Historical 15-minute oracle moves high relative to MM': 'Measure: 15-minute oracle jump as a percent of maintenance margin. Yellow starts at 100% MM for cross, 150% for isolated, and 200% for strict isolated.',
-    'Slippage on $10k high relative to MM': 'Measure: one-way $10K order book slippage as a percent of maintenance margin. Yellow starts at 50% MM for cross, 75% for isolated, and 100% for strict isolated.',
+    'Historical 15-second mark moves high relative to MM': 'Measure: 15-second mark-price jump as a percent of maintenance margin. Yellow starts at 50% MM for cross, 75% for isolated, and 100% for strict isolated.',
+    'Historical 15-minute mark moves high relative to MM': 'Measure: 15-minute mark-price jump as a percent of maintenance margin. Yellow starts at 100% MM for cross, 150% for isolated, and 200% for strict isolated.',
+    'Average impact mid premium high relative to MM': 'Measure: average absolute premium of impact-price midpoint over oracle as a percent of maintenance margin. Yellow/orange/red are 20%/30%/40% MM for cross, 30%/45%/60% for isolated, and 40%/60%/80% for strict isolated.',
+    'Slippage on $10k high relative to MM': 'Measure: one-way $10K order book slippage as a percent of maintenance margin. Yellow starts at 12.5% MM for cross, 18.75% for isolated, and 25% for strict isolated.',
     'Slippage on 5% of OI high relative to MM': 'Measure: one-way slippage for 5% of open interest as a percent of maintenance margin. Yellow starts at 50% MM for cross, 75% for isolated, and 100% for strict isolated.',
-    'High OI Cap headroom': 'Measure: streaming OI cap divided by open interest dollars plus $100K. Yellow starts above 20x for cross, 50x for isolated, and 100x for strict isolated.',
-    'Data gathering in progress, incomplete analysis': 'The market has insufficient oracle history for one or more jump-risk estimates.',
+    'Data gathering in progress, incomplete analysis': 'The market has insufficient mark-price history for one or more jump-risk estimates.',
     'Missing $10k L2 snapshot': 'No usable $10K order book depth snapshot is available for the market.',
 };
 
@@ -145,18 +156,19 @@ function hip3QuantileBand(rows, metric) {
         .sort((a, b) => a.x - b.x);
 }
 
-function hip3BandTrace(rows, metric, name, color) {
+function hip3P90LineTrace(rows, metric, name, color) {
     const band = hip3QuantileBand(rows, metric);
     if (!band.length) return null;
-    const x = band.map(row => row.x);
-    const low = band.map(row => row.low);
-    const high = band.map(row => row.high);
+    let runningHigh = null;
+    const monotoneHigh = band.map(row => {
+        runningHigh = runningHigh === null ? row.high : Math.max(runningHigh, row.high);
+        return runningHigh;
+    });
     return {
-        x: [...x, ...x.slice().reverse()],
-        y: [...low, ...high.slice().reverse()],
-        fill: 'toself',
-        fillcolor: color,
-        line: { color: 'rgba(0,0,0,0)' },
+        x: band.map(row => row.x),
+        y: monotoneHigh,
+        mode: 'lines',
+        line: { color, width: 2 },
         hoverinfo: 'skip',
         name,
         type: 'scatter',
@@ -185,6 +197,61 @@ function hip3PointTrace(rows, metric, name, color) {
         name,
         type: 'scatter',
     };
+}
+
+function hip3PointAxisRanges(rows, metric) {
+    const points = rows
+        .map(row => ({
+            x: Math.round(hip3DisplayedMetricValue(row, { field: 'im_pct', bp: true })),
+            y: hip3DisplayedMetricValue(row, metric),
+        }))
+        .filter(point => Number.isFinite(point.x) && Number.isFinite(point.y));
+    if (!points.length) {
+        return {
+            x: [0, 2000],
+            y: null,
+        };
+    }
+    const maxX = Math.max(...points.map(point => point.x));
+    const maxY = Math.max(...points.map(point => point.y));
+    return {
+        x: [0, maxX + 500],
+        y: [0, maxY + 100],
+    };
+}
+
+function hip3ChartWarningPcts(metric, marginMode) {
+    const modeMultiplier = metric.marginModeMultipliers?.[marginMode]
+        ?? (marginMode === 'strict isolated' ? 2 : marginMode === 'isolated' ? 1.5 : 1);
+    const yellowPct = Number(metric.crossWarningPct) * modeMultiplier;
+    if (!Number.isFinite(yellowPct) || yellowPct <= 0) return null;
+    const orangePct = Number.isFinite(Number(metric.crossOrangePct))
+        ? Number(metric.crossOrangePct) * modeMultiplier
+        : yellowPct * 1.25;
+    const redPct = Number.isFinite(Number(metric.crossRedPct))
+        ? Number(metric.crossRedPct) * modeMultiplier
+        : yellowPct * 1.5;
+    return { yellowPct, orangePct, redPct };
+}
+
+function hip3ThresholdLineTraces(metric, marginMode) {
+    const warningPcts = hip3ChartWarningPcts(metric, marginMode);
+    if (!warningPcts) return [];
+    const xMax = 1668;
+    return [
+        { name: 'Yellow threshold', pct: warningPcts.yellowPct, color: '#f6c344' },
+        { name: 'Orange threshold', pct: warningPcts.orangePct, color: '#f59e0b' },
+        { name: 'Red threshold', pct: warningPcts.redPct, color: '#ef4444' },
+    ].map(line => ({
+        x: [0, xMax],
+        y: [0, xMax * line.pct / 100],
+        mode: 'lines',
+        line: { color: line.color, width: 1.5, dash: 'dot' },
+        hoverinfo: 'skip',
+        showlegend: false,
+        name: line.name,
+        type: 'scatter',
+    }));
 }
 
 function hip3MarginModeBucket(row) {
@@ -221,10 +288,17 @@ function hip3PushThresholdWarning(warnings, row, spec) {
     const value = Number(row[spec.field]);
     const threshold = hip3ThresholdByMode(row, spec.thresholds);
     if (!Number.isFinite(value) || !Number.isFinite(threshold) || value < threshold) return;
+    const orangeThreshold = spec.orangeThresholds ? hip3ThresholdByMode(row, spec.orangeThresholds) : null;
+    const redThreshold = spec.redThresholds ? hip3ThresholdByMode(row, spec.redThresholds) : null;
+    const severity = Number.isFinite(redThreshold) && value >= redThreshold
+        ? 'danger'
+        : Number.isFinite(orangeThreshold) && value >= orangeThreshold
+            ? 'orange'
+            : hip3WarningSeverityFromThreshold(value, threshold);
     warnings.push({
         label: spec.label,
         value: spec.format(value),
-        severity: hip3WarningSeverityFromThreshold(value, threshold),
+        severity,
     });
 }
 
@@ -233,13 +307,13 @@ function hip3BuildWarnings(row) {
 
     [
         {
-            label: 'Historical 15-second oracle moves high relative to MM',
+            label: 'Historical 15-second mark moves high relative to MM',
             field: 'weekly_15s_pct_im',
             thresholds: { cross: 50, isolated: 75, 'strict isolated': 100 },
             format: hip3FormatPctMm,
         },
         {
-            label: 'Historical 15-minute oracle moves high relative to MM',
+            label: 'Historical 15-minute mark moves high relative to MM',
             field: 'weekly_15m_pct_im',
             thresholds: { cross: 100, isolated: 150, 'strict isolated': 200 },
             format: hip3FormatPctMm,
@@ -247,7 +321,15 @@ function hip3BuildWarnings(row) {
         {
             label: 'Slippage on $10k high relative to MM',
             field: 'hl_l2_10k_pct_im',
-            thresholds: { cross: 50, isolated: 75, 'strict isolated': 100 },
+            thresholds: { cross: 12.5, isolated: 18.75, 'strict isolated': 25 },
+            format: hip3FormatPctMm,
+        },
+        {
+            label: 'Average impact mid premium high relative to MM',
+            field: 'impact_premium_pct_im',
+            thresholds: { cross: 20, isolated: 30, 'strict isolated': 40 },
+            orangeThresholds: { cross: 30, isolated: 45, 'strict isolated': 60 },
+            redThresholds: { cross: 40, isolated: 60, 'strict isolated': 80 },
             format: hip3FormatPctMm,
         },
         {
@@ -255,12 +337,6 @@ function hip3BuildWarnings(row) {
             field: 'impact_5pct_oi_pct_im',
             thresholds: { cross: 50, isolated: 75, 'strict isolated': 100 },
             format: hip3FormatPctMm,
-        },
-        {
-            label: 'High OI Cap headroom',
-            field: 'score_oi_cap_to_oi',
-            thresholds: { cross: 20, isolated: 50, 'strict isolated': 100 },
-            format: value => `${value.toFixed(1)}x`,
         },
     ].forEach(spec => {
         hip3PushThresholdWarning(warnings, row, spec);
@@ -351,8 +427,10 @@ fetchHip3Data()
                 dexes: dexRows,
                 columns: HIP3_COLUMNS,
                 scoreColumns: HIP3_SCORE_COLUMNS,
+                marginModeOptions: HIP3_MARGIN_MODE_OPTIONS,
                 plotConfigs: HIP3_PLOT_CONFIGS,
                 selectedDex: defaultDex,
+                selectedChartMarginMode: 'cross',
                 searchQuery: '',
                 sortColumn: 'day_notional_volume',
                 sortDirection: 'desc',
@@ -365,7 +443,25 @@ fetchHip3Data()
 
             computed: {
                 dexOptions() {
-                    return this.dexes.map(row => row.dex);
+                    const counts = new Map();
+                    this.enrichedRows.forEach(row => {
+                        counts.set(row.dex, (counts.get(row.dex) || 0) + 1);
+                    });
+                    return this.dexes.map(row => ({
+                        dex: row.dex,
+                        count: counts.get(row.dex) || 0,
+                    }));
+                },
+
+                selectedChartMarginModeLabel() {
+                    return this.marginModeOptions.find(option => option.value === this.selectedChartMarginMode)?.label || 'Cross Margin';
+                },
+
+                chartMarginModeOptions() {
+                    return this.marginModeOptions.map(option => ({
+                        ...option,
+                        count: this.chartMarginModeAssetCount(option.value),
+                    }));
                 },
 
                 enrichedRows() {
@@ -374,11 +470,13 @@ fetchHip3Data()
                             const enriched = { ...row, im_pct: hip3ImPct(row) };
                             enriched.weekly_15s_pct_im = hip3PctOfIm(enriched, { field: 'weekly_15s_index_dev', metricGrade: true });
                             enriched.weekly_15m_pct_im = hip3PctOfIm(enriched, { field: 'weekly_15m_index_dev', metricGrade: true });
+                            enriched.impact_premium_pct_im = hip3PctOfIm(enriched, { field: 'avg_abs_impact_premium_bp', metricGrade: true });
                             enriched.impact_5pct_oi_pct_im = hip3PctOfIm(enriched, { field: 'score_impact_5pct_oi_bp', half: true, metricGrade: true });
                             enriched.hl_l2_10k_pct_im = hip3PctOfIm(enriched, { field: 'hl_l2_10k_bp', half: true, metricGrade: true });
                             enriched.max_pct_mm = hip3Max([
                                 enriched.weekly_15s_pct_im,
                                 enriched.weekly_15m_pct_im,
+                                enriched.impact_premium_pct_im,
                                 enriched.impact_5pct_oi_pct_im,
                                 enriched.hl_l2_10k_pct_im,
                             ]);
@@ -422,7 +520,7 @@ fetchHip3Data()
                 },
 
                 hasMaintenanceMarginWarnings() {
-                    return this.warningGroups.some(group => !group.isOiCap);
+                    return this.warningGroups.length > 0;
                 },
 
                 warningGroups() {
@@ -448,11 +546,7 @@ fetchHip3Data()
                         overflowCount: Math.max(0, rows.length - 80),
                         countLabel: formatWarningCount(rows.length, total),
                         tooltip: HIP3_WARNING_TOOLTIPS[label] || label,
-                        isOiCap: label === 'High OI Cap headroom',
-                    })).sort((a, b) => {
-                        if (a.isOiCap !== b.isOiCap) return a.isOiCap ? 1 : -1;
-                        return a.label.localeCompare(b.label);
-                    });
+                    })).sort((a, b) => a.label.localeCompare(b.label));
                 },
 
                 paginatedRows() {
@@ -519,6 +613,9 @@ fetchHip3Data()
                 selectedDex() {
                     this.currentPage = 1;
                     this.scoreCurrentPage = 1;
+                    this.$nextTick(() => this.renderHip3Plots());
+                },
+                selectedChartMarginMode() {
                     this.$nextTick(() => this.renderHip3Plots());
                 },
                 searchQuery() {
@@ -622,6 +719,20 @@ fetchHip3Data()
                     return hip3DexLabel(value);
                 },
 
+                setChartMarginMode(value) {
+                    this.selectedChartMarginMode = value;
+                },
+
+                chartMarginModeAssetCount(marginMode) {
+                    return this.enrichedRows
+                        .filter(row => row.dex === this.selectedDex && hip3MarginModeBucket(row) === marginMode)
+                        .filter(row => {
+                            const imBp = hip3DisplayedMetricValue(row, { field: 'im_pct', bp: true });
+                            if (!Number.isFinite(imBp)) return false;
+                            return this.plotConfigs.some(metric => Number.isFinite(hip3DisplayedMetricValue(row, metric)));
+                        }).length;
+                },
+
                 formatMetaNumber(value) {
                     const numberValue = Number(value);
                     if (!Number.isFinite(numberValue)) return '-';
@@ -637,19 +748,22 @@ fetchHip3Data()
                 renderHip3Plots() {
                     if (!window.Plotly) return;
                     const rows = this.enrichedRows;
-                    const mainRows = rows.filter(row => row.dex === 'main' && hip3MarginModeBucket(row) === 'cross');
-                    const hip3CrossRows = rows.filter(row => row.dex !== 'main' && hip3MarginModeBucket(row) === 'cross');
+                    const chartMarginMode = this.selectedChartMarginMode;
+                    const mainRows = rows.filter(row => row.dex === 'main' && hip3MarginModeBucket(row) === chartMarginMode);
+                    const hip3Rows = rows.filter(row => row.dex !== 'main' && hip3MarginModeBucket(row) === chartMarginMode);
                     const selectedRows = rows.filter(row => row.dex === this.selectedDex);
-                    const selectedCrossRows = selectedRows.filter(row => hip3MarginModeBucket(row) === 'cross');
+                    const selectedChartRows = selectedRows.filter(row => hip3MarginModeBucket(row) === chartMarginMode);
 
                     this.plotConfigs.forEach(metric => {
                         const target = document.getElementById(metric.id);
                         if (!target) return;
                         const traces = [
-                            hip3BandTrace(mainRows, metric, 'Hypercore', 'rgba(74, 144, 226, 0.25)'),
-                            hip3BandTrace(hip3CrossRows, metric, 'HIP-3', 'rgba(68, 170, 118, 0.25)'),
-                            hip3PointTrace(selectedCrossRows, metric, 'Cross margin', '#ffffff'),
+                            hip3P90LineTrace(mainRows, metric, 'Hypercore 90th', '#2dd4bf'),
+                            hip3P90LineTrace(hip3Rows, metric, 'HIP-3 90th', '#9ca3af'),
+                            ...hip3ThresholdLineTraces(metric, chartMarginMode),
+                            hip3PointTrace(selectedChartRows, metric, this.selectedChartMarginModeLabel, '#ffffff'),
                         ].filter(Boolean);
+                        const axisRanges = hip3PointAxisRanges(selectedChartRows, metric);
 
                         const layout = {
                             paper_bgcolor: 'rgba(0,0,0,0)',
@@ -658,24 +772,17 @@ fetchHip3Data()
                             margin: { l: 48, r: 18, t: 24, b: 42 },
                             xaxis: {
                                 title: 'Maintenance Margin bp',
-                                range: [0, 2000],
+                                range: axisRanges.x,
                                 gridcolor: 'rgba(255,255,255,0.08)',
                                 zerolinecolor: 'rgba(255,255,255,0.12)',
                             },
                             yaxis: {
                                 title: metric.label,
+                                range: axisRanges.y,
                                 gridcolor: 'rgba(255,255,255,0.08)',
                                 zerolinecolor: 'rgba(255,255,255,0.12)',
                             },
-                            legend: {
-                                orientation: 'h',
-                                x: 0,
-                                y: 1.16,
-                                entrywidth: 0.33,
-                                entrywidthmode: 'fraction',
-                                bgcolor: 'rgba(0,0,0,0)',
-                                font: { size: 10 },
-                            },
+                            showlegend: false,
                             hovermode: false,
                         };
                         Plotly.react(target, traces, layout, { displayModeBar: false, responsive: true });

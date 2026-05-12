@@ -24,7 +24,7 @@
                                 <h1>Hyperliquid HIP-3 Risk Monitor</h1>
                             </div>
                             <div class="page-header-actions">
-                                <span v-if="meta" class="version-badge">v1.2</span>
+                                <span v-if="meta" class="version-badge">v1.3</span>
                                 <span v-if="meta" class="version-badge">
                                     {{ generatedHeaderLabel }}
                                 </span>
@@ -40,11 +40,11 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="dex-switcher" role="group" aria-label="Dex switcher">
-                                <button v-for="dex in dexOptions" :key="dex"
-                                    :class="['btn', 'btn-secondary', { active: selectedDex === dex }]"
-                                    :aria-pressed="selectedDex === dex"
-                                    @click="selectedDex = dex">
-                                    {{ dexLabel(dex) }}
+                                <button v-for="option in dexOptions" :key="option.dex"
+                                    :class="['btn', 'btn-secondary', { active: selectedDex === option.dex }]"
+                                    :aria-pressed="selectedDex === option.dex"
+                                    @click="selectedDex = option.dex">
+                                    {{ dexLabel(option.dex) }} ({{ option.count }})
                                 </button>
                             </div>
                             <p class="table-helper-text mt-3 mb-0">
@@ -63,13 +63,14 @@
                         <div class="card-body">
                             <p class="page-executive-summary">
                                 The current report shows data for <strong>{{ dexLabel(selectedDex) }}</strong> covering
-                                {{ filteredRows.length }} pairs. It compares oracle volatility and order book slippage
+                                {{ filteredRows.length }} pairs. It compares mark-price volatility and order book slippage
                                 against each market's maintenance margin, including a slippage check for an order sized
-                                at 5% of open interest, and evaluates OI caps separately against actual OI plus a buffer.
+                                at 5% of open interest, and reports OI caps separately against actual OI plus a buffer.
                                 "% MM" is a simple stress-to-maintenance-margin comparison, not a full
                                 liquidation-loss simulation. Higher "% MM" means the measured stress consumes more of
                                 the market's maintenance-margin buffer. Warnings identify markets where a metric exceeds the
-                                configured threshold for that margin mode. Data was generated {{ generatedHeaderLabel }}.
+                                configured threshold for that margin mode or required data is missing. Data was
+                                generated {{ generatedHeaderLabel }}.
                             </p>
                         </div>
                     </div>
@@ -92,14 +93,11 @@
                                     No warnings
                                 </div>
                                 <div v-for="group in warningGroups" :key="group.label"
-                                    :class="['methodology-section', 'warning-section', { 'oi-cap-warning-section': group.isOiCap }]">
+                                    class="methodology-section warning-section">
                                     <div class="warning-section-header">
                                         <strong :title="group.tooltip">{{ group.label }}</strong>
                                         <span class="summary-hint">{{ group.countLabel }}</span>
                                     </div>
-                                    <p v-if="group.isOiCap" class="warning-section-note">
-                                        Uses OI cap / (OI + $100K), not maintenance margin.
-                                    </p>
                                     <div class="warnings-list">
                                         <span v-for="row in group.rows" :key="`${group.label}-${row.dex}-${row.symbol}`"
                                             :class="['warning-token', `severity-${row.severity}`]">
@@ -119,9 +117,45 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-title">
-                            <span>{{ dexLabel(selectedDex) }} Risk Profiles Of Cross Margin Assets</span>
+                            <span>{{ dexLabel(selectedDex) }} Risk Profiles</span>
                         </div>
                         <div class="card-body">
+                            <div class="hip3-chart-controls" role="group" aria-label="Chart margin mode">
+                                <button v-for="option in chartMarginModeOptions" :key="option.value"
+                                    :class="['btn', 'btn-secondary', { active: selectedChartMarginMode === option.value }]"
+                                    :aria-pressed="selectedChartMarginMode === option.value"
+                                    @click="setChartMarginMode(option.value)">
+                                    {{ option.label }} ({{ option.count }})
+                                </button>
+                            </div>
+                            <div class="hip3-chart-mode-label">
+                                {{ selectedChartMarginModeLabel }} Assets
+                            </div>
+                            <p class="hip3-chart-explanation">
+                                These plots show markets for the selected provider and selected margin mode. Each
+                                chart places maintenance margin implied by leverage on the x-axis and its named risk
+                                metric on the y-axis. Points are shown relative to the 90th percentile of Hypercore
+                                markets in teal, the 90th percentile of HIP-3 markets in grey, and the hard-coded
+                                warning thresholds shown as yellow, orange, and red dotted lines.
+                            </p>
+                            <div class="hip3-shared-legend" aria-label="Risk profile chart legend">
+                                <span class="hip3-legend-item">
+                                    <span class="hip3-legend-line hip3-legend-line-teal"></span>
+                                    Hypercore 90th
+                                </span>
+                                <span class="hip3-legend-item">
+                                    <span class="hip3-legend-line hip3-legend-line-grey"></span>
+                                    HIP-3 90th
+                                </span>
+                                <span class="hip3-legend-item">
+                                    <span class="hip3-legend-dot"></span>
+                                    Selected {{ selectedChartMarginModeLabel.toLowerCase() }} assets
+                                </span>
+                                <span class="hip3-legend-item">
+                                    <span class="hip3-legend-line hip3-legend-line-yellow hip3-legend-line-dotted"></span>
+                                    Warning threshold
+                                </span>
+                            </div>
                             <div class="hip3-plots-grid">
                                 <div v-for="plot in plotConfigs" :key="plot.id"
                                     :id="plot.id"
@@ -339,16 +373,21 @@
                                             Every slippage value shown in the Assets table, Scores table, and charts is
                                             one-way taker slippage from mid price, in basis points. The recorder stores
                                             buy-side plus sell-side round-trip spreads, so the page displays half of the
-                                            recorded spread. If a raw snapshot has $1K depth but is missing $10K or
-                                            $100K depth, the report uses a conservative 1000bp round-trip depth value
-                                            for that missing level. Depth medians are forced to be nondecreasing across
-                                            larger order sizes. The OI-sized slippage metric uses an order notional
-                                            equal to 5% of open interest and interpolates across those depth levels. If
-                                            it needs a missing higher level, that level is conservatively filled from
-                                            the prior level and capped at 1000bp before the one-way display conversion.
+                                            recorded spread. The current recorder stores $1K, $2.5K, $10K, $25K,
+                                            $100K, $250K, and $1M depth. Older snapshots that only have the original
+                                            $1K, $10K, $100K, and $1M buckets are upgraded on load by filling $2.5K,
+                                            $25K, and $250K as geometric midpoints between the adjacent present levels;
+                                            for example, if $10K is 10bp and $100K is 1000bp, $25K is filled as 100bp.
+                                            If a raw snapshot has $1K depth but is missing $10K or $100K depth, the
+                                            report uses a conservative 2000bp round-trip depth value for that missing
+                                            original ladder level. Depth medians are forced to be nondecreasing across larger order
+                                            sizes. The OI-sized slippage metric uses an order notional equal to 5% of
+                                            open interest and interpolates across those depth levels. If it needs a
+                                            missing higher level, that level is conservatively filled from the prior
+                                            level and capped at 2000bp before the one-way display conversion.
                                         </p>
                                         <p>
-                                            Oracle jump estimates are stored and displayed in basis points. Oracle prices
+                                            Mark-price jump estimates are stored and displayed in basis points. Mark prices
                                             are resampled to 15-second observations. The 15-second jump is the empirical
                                             quantile of absolute one-period log-price moves at the once-per-week tail
                                             frequency:
@@ -359,11 +398,19 @@
                                             per week of non-overlapping 15-minute windows:
                                             <code>quantile(abs(diff(log(price), 60)), 1 - 60 / periods_per_week)</code>.
                                             This is not a fitted tail model and is not annualized; it is an empirical
-                                            absolute move estimate from the recorded oracle history. Because the
+                                            absolute move estimate from the recorded mark-price history. Because the
                                             15-minute windows overlap, adjacent samples are autocorrelated and the
                                             effective independent sample count is smaller than the raw window count. A
-                                            market needs at least 1,000 usable samples for each oracle-jump window.
+                                            market needs at least 1,000 usable samples for each mark-price jump window.
                                             Otherwise, jump analysis is marked as still gathering data.
+                                        </p>
+                                        <p>
+                                            Avg Impact Mid Premium is the historical average absolute premium of the
+                                            midpoint of Hyperliquid's impact prices over the oracle price:
+                                            <code>abs(((impact bid + impact ask) / 2) / oracle - 1)</code>. It is
+                                            calculated from the recorded meta/context snapshots and displayed in basis
+                                            points. Its % MM column compares that average premium to the same
+                                            maintenance-margin value used by the other risk metrics.
                                         </p>
                                         <p>
                                             MM means maintenance margin. It follows the exchange-style calculation
@@ -376,8 +423,8 @@
                                         </p>
                                         <p>
                                             Max Risk is the largest available % MM reading across the 15-second
-                                            oracle jump, 15-minute oracle jump, $10K one-way slippage, and 5% OI
-                                            one-way slippage metrics. It is a triage field: higher values mean the most
+                                            mark-price jump, 15-minute mark-price jump, average impact mid premium,
+                                            $10K one-way slippage, and 5% OI one-way slippage metrics. It is a triage field: higher values mean the most
                                             concerning observed risk metric consumes more of the market's maintenance
                                             margin buffer. Missing inputs are ignored; if every risk input is missing,
                                             Max Risk is blank.
@@ -388,15 +435,22 @@
                                         <summary>Warning Thresholds</summary>
                                         <p>
                                             Warnings are mode-aware. Yellow means the metric is at or above its
-                                            threshold. Orange means the metric is at least 25% over that threshold. Red
-                                            means the metric is at least 50% over that threshold. Grey means the market
-                                            has insufficient oracle history for jump analysis.
+                                            threshold. Unless explicit yellow/orange/red levels are listed, orange
+                                            means the metric is at least 25% over that threshold and red means it is at
+                                            least 50% over that threshold. Grey means the market has insufficient
+                                            mark-price history for jump analysis. A missing $10K L2 snapshot is also
+                                            shown as a yellow data-availability warning.
                                         </p>
                                         <p>
-                                            For 15-second oracle jumps, $10K slippage, and 5% OI slippage, the yellow
-                                            thresholds are 50% MM for cross, 75% MM for isolated, and 100% MM for strict
-                                            isolated. For 15-minute oracle jumps, the thresholds are 100% MM for cross,
-                                            150% MM for isolated, and 200% MM for strict isolated.
+                                            For 15-second mark-price jumps and 5% OI slippage, the yellow thresholds
+                                            are 50% MM for cross, 75% MM for isolated, and 100% MM for strict isolated.
+                                            For average impact mid premium, the yellow/orange/red thresholds are
+                                            20%/30%/40% MM for cross, 30%/45%/60% MM for isolated, and
+                                            40%/60%/80% MM for strict isolated. For $10K slippage, the yellow
+                                            thresholds are 12.5% MM for cross, 18.75% MM for isolated, and 25% MM for
+                                            strict isolated.
+                                            For 15-minute mark-price jumps, the thresholds are 100% MM for cross, 150%
+                                            MM for isolated, and 200% MM for strict isolated.
                                         </p>
                                         <p>
                                             These thresholds are configured risk-policy thresholds. They are not fitted
@@ -414,18 +468,17 @@
                                                 </thead>
                                                 <tbody>
                                                     <tr><td>15s jump</td><td>50% MM</td><td>75% MM</td><td>100% MM</td></tr>
-                                                    <tr><td>$10K slippage</td><td>50% MM</td><td>75% MM</td><td>100% MM</td></tr>
+                                                    <tr><td>Avg impact mid premium</td><td>20 / 30 / 40% MM</td><td>30 / 45 / 60% MM</td><td>40 / 60 / 80% MM</td></tr>
+                                                    <tr><td>$10K slippage</td><td>12.5% MM</td><td>18.75% MM</td><td>25% MM</td></tr>
                                                     <tr><td>5% OI slippage</td><td>50% MM</td><td>75% MM</td><td>100% MM</td></tr>
                                                     <tr><td>15m jump</td><td>100% MM</td><td>150% MM</td><td>200% MM</td></tr>
-                                                    <tr><td>OI cap ratio</td><td>20x</td><td>50x</td><td>100x</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
                                         <p>
-                                            OI cap / (OI + $100K) warns above 20x for cross, 50x for isolated, and 100x
-                                            for strict isolated. The warning pills include leverage and margin mode:
-                                            cross assets show <code>Xxdex:COIN</code>, isolated assets show
-                                            <code>IsoXxdex:COIN</code>, and strict isolated assets show
+                                            Warning pills include leverage and margin mode: cross assets show
+                                            <code>Xxdex:COIN</code>, isolated assets show <code>IsoXxdex:COIN</code>,
+                                            and strict isolated assets show
                                             <code>StrictXxdex:COIN</code>.
                                         </p>
                                     </details>
@@ -433,18 +486,28 @@
                                     <details class="methodology-subdetails">
                                         <summary>Chart Ranges</summary>
                                         <p>
-                                            The risk profile charts only use cross-margin assets. The blue range is the
-                                            Hypercore cross-margin distribution, grouped by maintenance-margin basis
-                                            points. The green range is the non-main HIP-3 cross-margin distribution,
-                                            grouped the same way. For each MM bucket, the shaded band spans the 10th to
-                                            90th percentile of the plotted metric.
+                                            The risk profile charts use the selected margin mode. The teal line is the
+                                            90th percentile of the Hypercore distribution for that margin mode, grouped
+                                            by maintenance-margin basis points. The grey line is the 90th percentile of
+                                            the non-main HIP-3 distribution for that margin mode, grouped the same way.
+                                            Percentile lines are forced to be nondecreasing as maintenance margin
+                                            increases.
                                         </p>
                                         <p>
-                                            White dots are the selected dex's cross-margin assets. Labels show the asset
-                                            symbol. The x-axis is fixed from 0 to 2000 maintenance-margin bp so leverage
-                                            changes and outlier placement are comparable across dexes. The y-axis is the
-                                            raw plotted metric: 15-second jump bp, 15-minute jump bp, one-way slippage
-                                            for 5% of OI, or one-way slippage for $10K.
+                                            Dotted yellow, orange, and red lines show the warning levels for the plotted
+                                            metric and selected margin mode. For most plotted metrics, orange is 25%
+                                            above the yellow threshold and red is 50% above it. Average impact mid premium
+                                            uses the explicit yellow/orange/red levels shown in the warning-threshold
+                                            table.
+                                        </p>
+                                        <p>
+                                            White dots are the selected dex's assets for the selected margin mode.
+                                            Labels show the asset symbol. The initial x-axis starts at 0 and extends
+                                            500bp beyond the selected assets' maximum maintenance-margin value. The
+                                            initial y-axis starts at 0 and extends 100bp beyond the selected assets'
+                                            maximum plotted value. The y-axis is the raw plotted metric: 15-second jump
+                                            bp, 15-minute jump bp, average absolute impact-price premium bp, one-way
+                                            slippage for 5% of OI, or one-way slippage for $10K.
                                         </p>
                                     </details>
                                 </div>
@@ -494,8 +557,8 @@
                                                     <td>{{ formatMetaNumber(meta.l2_asset_count) }}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Assets with oracle jump estimates</td>
-                                                    <td>{{ formatMetaNumber(meta.oracle_move_asset_count) }}</td>
+                                                    <td>Assets with mark-price jump estimates</td>
+                                                    <td>{{ formatMetaNumber(meta.mark_move_asset_count) }}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
