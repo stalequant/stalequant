@@ -60,7 +60,7 @@ _MARK_MOVE_MIN_SAMPLES = 1_000
 _MARK_MOVE_BUCKET_MS = 15_000
 _MARK_MOVE_15M_BUCKETS = 60
 _MARK_MOVE_TOP_VALUES = 2_048
-_WEEKLY_15S_SAMPLE_COUNT = int(pd.Timedelta(days=7) / pd.Timedelta(seconds=15))
+_WEEKLY_15S_SAMPLE_COUNT = 7 * 24 * 60 * 60 // 15
 _RATIO_GRADES = ("A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D", "F")
 
 
