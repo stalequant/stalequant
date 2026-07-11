@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>stalequant.com - crypto benchmarking</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+
+<body>
+  <div class="container py-4 px-4">
+    <div class="row g-4">
+
+      <!-- Header -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-title">
+            <span>stalequant.com - crypto benchmarking</span>
+            <a href="../index.html">← Home</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart card -->
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body flex-col">
+            <div id="comps-plot"></div>
+            <div class="flex-row">
+              <span class="comps-optLabel">Targets:</span>
+              <div class="comps-picker">
+                <input id="inputTarget" type="text" placeholder="HYPE, SOL, etc." autocomplete="off" />
+                <div class="comps-dropdown" id="ddTarget"></div>
+              </div>
+              <ul class="comps-tokenList" id="listTarget"></ul>
+            </div>
+            <div class="flex-row">
+              <span class="comps-optLabel">Benchmarks:</span>
+              <div class="comps-picker">
+                <input id="inputBench" type="text" placeholder="BTC, ETH, etc." autocomplete="off" />
+                <div class="comps-dropdown" id="ddBench"></div>
+              </div>
+              <ul class="comps-tokenList" id="listBench"></ul>
+            </div>
+            <div class="flex-row">
+              <span class="comps-optLabel">Granularity:</span>
+              <div class="comps-optBtns" data-group="granularity">
+                <button class="btn btn-secondary" data-value="M">M</button>
+                <button class="btn btn-secondary active" data-value="15M">15M</button>
+                <button class="btn btn-secondary" data-value="H">H</button>
+                <button class="btn btn-secondary" data-value="4H">4H</button>
+                <button class="btn btn-secondary" data-value="D">D</button>
+              </div>
+            </div>
+            <div class="flex-row">
+              <span class="comps-optLabel">Benchmark Mode:</span>
+              <div class="comps-optBtns" data-group="benchmarkMode">
+                <button class="btn btn-secondary" data-value="raw">raw</button>
+                <button class="btn btn-secondary active" data-value="demean_beta1">demean (beta=1)</button>
+                <button class="btn btn-secondary" data-value="beta_adjust">beta adj</button>
+              </div>
+            </div>
+          </div>
+          <div class="ctrlbar" id="compsCtrlBar" title="Click to expand/collapse">
+            <div class="left">
+              <div class="chev" id="compsChev">&#8250;</div>
+              <div>
+                <div class="title">Model controls</div>
+                <div class="summary" id="compsCtrlSummary">
+                </div>
+              </div>
+            </div>
+            <span class="badge bad" id="compsUpdatedBadge">Stale · waiting</span>
+            <span class="badge" id="compsCacheBadge">0 keys</span>
+          </div>
+
+          <div class="ctrlpanel" id="compsCtrlPanel">
+            <div class="spacer"></div>
+
+            <div class="field">
+              <label>Show comparables</label>
+              <div class="comps-optBtns" data-group="comparables">
+                <button class="btn btn-secondary active" data-value="auto">&lt;auto&gt;</button>
+                <button class="btn btn-secondary" data-value="yes">yes</button>
+                <button class="btn btn-secondary" data-value="no">no</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Data source</label>
+              <div class="comps-optBtns" data-group="dataSource">
+                <button class="btn btn-secondary active" data-value="binance">binance</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Censor returns</label>
+              <div class="comps-optBtns" data-group="censor">
+                <button class="btn btn-secondary active" data-value="no">no</button>
+                <button class="btn btn-secondary" data-value="0.05">5%</button>
+                <button class="btn btn-secondary" data-value="0.10">10%</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="comps-toast" id="toast">
+    <button class="btn btn-secondary" id="toastClose" title="Dismiss">x</button>
+    <div class="tTitle" id="toastTitle"></div>
+    <div class="tBody" id="toastBody"></div>
+  </div>
+
+  <script src="../live_status.js"></script>
+  <script src="shared.js"></script>
+  <script src="data.js"></script>
+  <script src="math.js"></script>
+  <script src="chart.js"></script>
+  <script src="ui.js"></script>
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
