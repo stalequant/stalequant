@@ -43,29 +43,37 @@ def _prune_jsonl_older_than(output_path: Path, cutoff_ms: int) -> None:
     tmp_path = output_path.with_name(f"{output_path.name}.{uuid4().hex}.tmp")
     kept_count = 0
     removed_count = 0
-    with output_path.open(encoding="utf-8") as src, tmp_path.open("w", encoding="utf-8") as dst:
-        for line in src:
-            raw = line.strip()
-            if not raw:
-                continue
-            try:
-                recorded_at = int(loads(raw).get("recorded_at", cutoff_ms))
-            except Exception:
-                recorded_at = cutoff_ms
-            if recorded_at >= cutoff_ms:
-                _ = dst.write(line if line.endswith("\n") else f"{line}\n")
-                kept_count += 1
-            else:
-                removed_count += 1
-
-    if kept_count == 0 or removed_count == 0:
-        tmp_path.unlink(missing_ok=True)
-        return
     try:
-        tmp_path.replace(output_path)
-    except PermissionError:
-        output_path.unlink(missing_ok=True)
-        tmp_path.replace(output_path)
+         with output_path.open(encoding="utf-8") as src, tmp_path.open(
+             "w", encoding="utf-8"
+         ) as dst:
+             for line in src:
+                 raw = line.strip()
+                 if not raw:
+                     continue
+                 try:
+                     record = loads(raw)
+                     recorded_at = int(
+                         record.get("recorded_at", record.get("ts", cutoff_ms))
+                     )
+                 except Exception:
+                     recorded_at = cutoff_ms
+                 if recorded_at >= cutoff_ms:
+                     _ = dst.write(line if line.endswith("\n") else f"{line}\n")
+                     kept_count += 1
+                 else:
+                     removed_count += 1
+ 
+         if kept_count == 0 or removed_count == 0:
+             return
+         try:
+             tmp_path.replace(output_path)
+         except PermissionError:
+             output_path.unlink(missing_ok=True)
+             tmp_path.replace(output_path)
+     finally:
+         with suppress(OSError):
+             tmp_path.unlink(missing_ok=True)
 
 
 def _prune_jsonl_for_retention(output_path: Path, recorded_at_ms: int) -> None:
