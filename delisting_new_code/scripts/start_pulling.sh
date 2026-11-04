@@ -6,7 +6,16 @@ PROJECT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 cd "$PROJECT_DIR" || exit 1
 DATA_DIR="$PROJECT_DIR/../delisting_new_data/data"
 
-PYTHON_BIN=${PYTHON:-python3}
+if [ -n "${PYTHON:-}" ]; then
+    PYTHON_BIN=$PYTHON
+elif [ -x "$PROJECT_DIR/.venv/bin/python" ]; then
+    PYTHON_BIN="$PROJECT_DIR/.venv/bin/python"
+else
+    PYTHON_BIN=python3.14
+fi
+
+# Fail before starting a background recorder if setup is incomplete.
+"$PYTHON_BIN" -c 'import sys; assert sys.version_info >= (3, 14), "Python 3.14 or newer is required"; import aiosonic, ccxt.pro, numpy, pandas, pydantic, requests' || exit 1
 
 echo "Starting continuous delisting data recorder..."
 "$PYTHON_BIN" -m src &
